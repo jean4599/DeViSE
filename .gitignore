@@ -1,1 +1,3 @@
 /Data/*
+/tmp/*
+.ipynb_checkpoints/*
