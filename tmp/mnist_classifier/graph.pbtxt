@@ -891,7 +891,7 @@ node {
   }
 }
 node {
-  name: "random_shuffle_queue_DequeueMany/n"
+  name: "random_shuffle_queue_DequeueUpTo/n"
   op: "Const"
   device: "/device:CPU:0"
   attr {
@@ -916,16 +916,16 @@ node {
         dtype: DT_INT32
         tensor_shape {
         }
-        int_val: 120
+        int_val: 128
       }
     }
   }
 }
 node {
-  name: "random_shuffle_queue_DequeueMany"
-  op: "QueueDequeueManyV2"
+  name: "random_shuffle_queue_DequeueUpTo"
+  op: "QueueDequeueUpToV2"
   input: "enqueue_input/random_shuffle_queue"
-  input: "random_shuffle_queue_DequeueMany/n"
+  input: "random_shuffle_queue_DequeueUpTo/n"
   device: "/device:CPU:0"
   attr {
     key: "_output_shapes"
@@ -933,12 +933,12 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
         }
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 3072
@@ -946,7 +946,7 @@ node {
         }
         shape {
           dim {
-            size: 120
+            size: -1
           }
         }
       }
@@ -1009,7 +1009,7 @@ node {
 node {
   name: "Reshape"
   op: "Reshape"
-  input: "random_shuffle_queue_DequeueMany:1"
+  input: "random_shuffle_queue_DequeueUpTo:1"
   input: "Reshape/shape"
   attr {
     key: "T"
@@ -1029,7 +1029,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 32
@@ -1432,7 +1432,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 32
@@ -1650,7 +1650,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 32
@@ -1688,7 +1688,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 32
@@ -1720,7 +1720,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 16
@@ -1786,7 +1786,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 16
@@ -2213,7 +2213,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 16
@@ -2431,7 +2431,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 16
@@ -2469,7 +2469,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 16
@@ -2501,7 +2501,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 16
@@ -2557,7 +2557,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 8
@@ -2608,7 +2608,7 @@ node {
   }
 }
 node {
-  name: "local3/Reshape/shape"
+  name: "Reshape_1/shape"
   op: "Const"
   input: "^add"
   attr {
@@ -2639,16 +2639,16 @@ node {
             size: 2
           }
         }
-        tensor_content: "x\000\000\000\377\377\377\377"
+        tensor_content: "\377\377\377\377\000\020\000\000"
       }
     }
   }
 }
 node {
-  name: "local3/Reshape"
+  name: "Reshape_1"
   op: "Reshape"
   input: "pool2"
-  input: "local3/Reshape/shape"
+  input: "Reshape_1/shape"
   attr {
     key: "T"
     value {
@@ -2667,7 +2667,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 4096
@@ -2678,9 +2678,16 @@ node {
   }
 }
 node {
-  name: "local3/truncated_normal/shape"
+  name: "dense/kernel/Initializer/random_uniform/shape"
   op: "Const"
-  input: "^add"
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense/kernel"
+      }
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
@@ -2709,15 +2716,22 @@ node {
             size: 2
           }
         }
-        tensor_content: "\000\020\000\000\200\001\000\000"
+        tensor_content: "\000\020\000\000\000\004\000\000"
       }
     }
   }
 }
 node {
-  name: "local3/truncated_normal/mean"
+  name: "dense/kernel/Initializer/random_uniform/min"
   op: "Const"
-  input: "^add"
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense/kernel"
+      }
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
@@ -2740,15 +2754,22 @@ node {
         dtype: DT_FLOAT
         tensor_shape {
         }
-        float_val: 0.0
+        float_val: -0.03423266112804413
       }
     }
   }
 }
 node {
-  name: "local3/truncated_normal/stddev"
+  name: "dense/kernel/Initializer/random_uniform/max"
   op: "Const"
-  input: "^add"
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense/kernel"
+      }
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
@@ -2771,19 +2792,27 @@ node {
         dtype: DT_FLOAT
         tensor_shape {
         }
-        float_val: 0.10000000149011612
+        float_val: 0.03423266112804413
       }
     }
   }
 }
 node {
-  name: "local3/truncated_normal/TruncatedNormal"
-  op: "TruncatedNormal"
-  input: "local3/truncated_normal/shape"
+  name: "dense/kernel/Initializer/random_uniform/RandomUniform"
+  op: "RandomUniform"
+  input: "dense/kernel/Initializer/random_uniform/shape"
   attr {
     key: "T"
     value {
       type: DT_INT32
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense/kernel"
+      }
     }
   }
   attr {
@@ -2795,7 +2824,7 @@ node {
             size: 4096
           }
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -2821,14 +2850,51 @@ node {
   }
 }
 node {
-  name: "local3/truncated_normal/mul"
+  name: "dense/kernel/Initializer/random_uniform/sub"
+  op: "Sub"
+  input: "dense/kernel/Initializer/random_uniform/max"
+  input: "dense/kernel/Initializer/random_uniform/min"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense/kernel"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dense/kernel/Initializer/random_uniform/mul"
   op: "Mul"
-  input: "local3/truncated_normal/TruncatedNormal"
-  input: "local3/truncated_normal/stddev"
+  input: "dense/kernel/Initializer/random_uniform/RandomUniform"
+  input: "dense/kernel/Initializer/random_uniform/sub"
   attr {
     key: "T"
     value {
       type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense/kernel"
+      }
     }
   }
   attr {
@@ -2840,7 +2906,7 @@ node {
             size: 4096
           }
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -2848,14 +2914,22 @@ node {
   }
 }
 node {
-  name: "local3/truncated_normal"
+  name: "dense/kernel/Initializer/random_uniform"
   op: "Add"
-  input: "local3/truncated_normal/mul"
-  input: "local3/truncated_normal/mean"
+  input: "dense/kernel/Initializer/random_uniform/mul"
+  input: "dense/kernel/Initializer/random_uniform/min"
   attr {
     key: "T"
     value {
       type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense/kernel"
+      }
     }
   }
   attr {
@@ -2867,7 +2941,7 @@ node {
             size: 4096
           }
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -2875,9 +2949,17 @@ node {
   }
 }
 node {
-  name: "local3/Variable"
+  name: "dense/kernel"
   op: "VariableV2"
   attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense/kernel"
+      }
+    }
+  }
+  attr {
     key: "_output_shapes"
     value {
       list {
@@ -2886,7 +2968,7 @@ node {
             size: 4096
           }
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -2912,7 +2994,7 @@ node {
           size: 4096
         }
         dim {
-          size: 384
+          size: 1024
         }
       }
     }
@@ -2925,10 +3007,10 @@ node {
   }
 }
 node {
-  name: "local3/Variable/Assign"
+  name: "dense/kernel/Assign"
   op: "Assign"
-  input: "local3/Variable"
-  input: "local3/truncated_normal"
+  input: "dense/kernel"
+  input: "dense/kernel/Initializer/random_uniform"
   attr {
     key: "T"
     value {
@@ -2939,7 +3021,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@local3/Variable"
+        s: "loc:@dense/kernel"
       }
     }
   }
@@ -2952,7 +3034,7 @@ node {
             size: 4096
           }
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -2972,9 +3054,9 @@ node {
   }
 }
 node {
-  name: "local3/Variable/read"
+  name: "dense/kernel/read"
   op: "Identity"
-  input: "local3/Variable"
+  input: "dense/kernel"
   attr {
     key: "T"
     value {
@@ -2985,7 +3067,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@local3/Variable"
+        s: "loc:@dense/kernel"
       }
     }
   }
@@ -2998,7 +3080,7 @@ node {
             size: 4096
           }
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -3006,16 +3088,23 @@ node {
   }
 }
 node {
-  name: "local3/Const"
+  name: "dense/bias/Initializer/zeros"
   op: "Const"
-  input: "^add"
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense/bias"
+      }
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
       list {
         shape {
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -3034,24 +3123,32 @@ node {
         dtype: DT_FLOAT
         tensor_shape {
           dim {
-            size: 384
+            size: 1024
           }
         }
-        float_val: 0.10000000149011612
+        float_val: 0.0
       }
     }
   }
 }
 node {
-  name: "local3/Variable_1"
+  name: "dense/bias"
   op: "VariableV2"
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense/bias"
+      }
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
       list {
         shape {
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -3074,7 +3171,7 @@ node {
     value {
       shape {
         dim {
-          size: 384
+          size: 1024
         }
       }
     }
@@ -3087,10 +3184,10 @@ node {
   }
 }
 node {
-  name: "local3/Variable_1/Assign"
+  name: "dense/bias/Assign"
   op: "Assign"
-  input: "local3/Variable_1"
-  input: "local3/Const"
+  input: "dense/bias"
+  input: "dense/bias/Initializer/zeros"
   attr {
     key: "T"
     value {
@@ -3101,7 +3198,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@local3/Variable_1"
+        s: "loc:@dense/bias"
       }
     }
   }
@@ -3111,7 +3208,7 @@ node {
       list {
         shape {
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -3131,9 +3228,9 @@ node {
   }
 }
 node {
-  name: "local3/Variable_1/read"
+  name: "dense/bias/read"
   op: "Identity"
-  input: "local3/Variable_1"
+  input: "dense/bias"
   attr {
     key: "T"
     value {
@@ -3144,7 +3241,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@local3/Variable_1"
+        s: "loc:@dense/bias"
       }
     }
   }
@@ -3154,7 +3251,7 @@ node {
       list {
         shape {
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -3162,10 +3259,10 @@ node {
   }
 }
 node {
-  name: "local3/MatMul"
+  name: "dense/MatMul"
   op: "MatMul"
-  input: "local3/Reshape"
-  input: "local3/Variable/read"
+  input: "Reshape_1"
+  input: "dense/kernel/read"
   attr {
     key: "T"
     value {
@@ -3178,10 +3275,10 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -3201,10 +3298,10 @@ node {
   }
 }
 node {
-  name: "local3/add"
-  op: "Add"
-  input: "local3/MatMul"
-  input: "local3/Variable_1/read"
+  name: "dense/BiasAdd"
+  op: "BiasAdd"
+  input: "dense/MatMul"
+  input: "dense/bias/read"
   attr {
     key: "T"
     value {
@@ -3217,20 +3314,26 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
     }
   }
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
 }
 node {
-  name: "local3/local3"
+  name: "dense/Relu"
   op: "Relu"
-  input: "local3/add"
+  input: "dense/BiasAdd"
   attr {
     key: "T"
     value {
@@ -3243,10 +3346,10 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -3254,7 +3357,7 @@ node {
   }
 }
 node {
-  name: "local4/truncated_normal/shape"
+  name: "dropout/dropout/keep_prob"
   op: "Const"
   input: "^add"
   attr {
@@ -3262,9 +3365,6 @@ node {
     value {
       list {
         shape {
-          dim {
-            size: 2
-          }
         }
       }
     }
@@ -3272,26 +3372,52 @@ node {
   attr {
     key: "dtype"
     value {
-      type: DT_INT32
+      type: DT_FLOAT
     }
   }
   attr {
     key: "value"
     value {
       tensor {
-        dtype: DT_INT32
+        dtype: DT_FLOAT
         tensor_shape {
-          dim {
-            size: 2
-          }
         }
-        tensor_content: "\200\001\000\000\300\000\000\000"
+        float_val: 0.6000000238418579
       }
     }
   }
 }
 node {
-  name: "local4/truncated_normal/mean"
+  name: "dropout/dropout/Shape"
+  op: "Shape"
+  input: "dense/Relu"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 2
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "out_type"
+    value {
+      type: DT_INT32
+    }
+  }
+}
+node {
+  name: "dropout/dropout/random_uniform/min"
   op: "Const"
   input: "^add"
   attr {
@@ -3322,7 +3448,7 @@ node {
   }
 }
 node {
-  name: "local4/truncated_normal/stddev"
+  name: "dropout/dropout/random_uniform/max"
   op: "Const"
   input: "^add"
   attr {
@@ -3347,15 +3473,15 @@ node {
         dtype: DT_FLOAT
         tensor_shape {
         }
-        float_val: 0.10000000149011612
+        float_val: 1.0
       }
     }
   }
 }
 node {
-  name: "local4/truncated_normal/TruncatedNormal"
-  op: "TruncatedNormal"
-  input: "local4/truncated_normal/shape"
+  name: "dropout/dropout/random_uniform/RandomUniform"
+  op: "RandomUniform"
+  input: "dropout/dropout/Shape"
   attr {
     key: "T"
     value {
@@ -3368,10 +3494,10 @@ node {
       list {
         shape {
           dim {
-            size: 384
+            size: -1
           }
           dim {
-            size: 192
+            size: 1024
           }
         }
       }
@@ -3397,10 +3523,31 @@ node {
   }
 }
 node {
-  name: "local4/truncated_normal/mul"
+  name: "dropout/dropout/random_uniform/sub"
+  op: "Sub"
+  input: "dropout/dropout/random_uniform/max"
+  input: "dropout/dropout/random_uniform/min"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dropout/dropout/random_uniform/mul"
   op: "Mul"
-  input: "local4/truncated_normal/TruncatedNormal"
-  input: "local4/truncated_normal/stddev"
+  input: "dropout/dropout/random_uniform/RandomUniform"
+  input: "dropout/dropout/random_uniform/sub"
   attr {
     key: "T"
     value {
@@ -3413,10 +3560,10 @@ node {
       list {
         shape {
           dim {
-            size: 384
+            size: -1
           }
           dim {
-            size: 192
+            size: 1024
           }
         }
       }
@@ -3424,10 +3571,10 @@ node {
   }
 }
 node {
-  name: "local4/truncated_normal"
+  name: "dropout/dropout/random_uniform"
   op: "Add"
-  input: "local4/truncated_normal/mul"
-  input: "local4/truncated_normal/mean"
+  input: "dropout/dropout/random_uniform/mul"
+  input: "dropout/dropout/random_uniform/min"
   attr {
     key: "T"
     value {
@@ -3440,10 +3587,10 @@ node {
       list {
         shape {
           dim {
-            size: 384
+            size: -1
           }
           dim {
-            size: 192
+            size: 1024
           }
         }
       }
@@ -3451,336 +3598,10 @@ node {
   }
 }
 node {
-  name: "local4/Variable"
-  op: "VariableV2"
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 384
-          }
-          dim {
-            size: 192
-          }
-        }
-      }
-    }
-  }
-  attr {
-    key: "container"
-    value {
-      s: ""
-    }
-  }
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "shape"
-    value {
-      shape {
-        dim {
-          size: 384
-        }
-        dim {
-          size: 192
-        }
-      }
-    }
-  }
-  attr {
-    key: "shared_name"
-    value {
-      s: ""
-    }
-  }
-}
-node {
-  name: "local4/Variable/Assign"
-  op: "Assign"
-  input: "local4/Variable"
-  input: "local4/truncated_normal"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@local4/Variable"
-      }
-    }
-  }
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 384
-          }
-          dim {
-            size: 192
-          }
-        }
-      }
-    }
-  }
-  attr {
-    key: "use_locking"
-    value {
-      b: true
-    }
-  }
-  attr {
-    key: "validate_shape"
-    value {
-      b: true
-    }
-  }
-}
-node {
-  name: "local4/Variable/read"
-  op: "Identity"
-  input: "local4/Variable"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@local4/Variable"
-      }
-    }
-  }
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 384
-          }
-          dim {
-            size: 192
-          }
-        }
-      }
-    }
-  }
-}
-node {
-  name: "local4/Const"
-  op: "Const"
-  input: "^add"
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 192
-          }
-        }
-      }
-    }
-  }
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_FLOAT
-        tensor_shape {
-          dim {
-            size: 192
-          }
-        }
-        float_val: 0.10000000149011612
-      }
-    }
-  }
-}
-node {
-  name: "local4/Variable_1"
-  op: "VariableV2"
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 192
-          }
-        }
-      }
-    }
-  }
-  attr {
-    key: "container"
-    value {
-      s: ""
-    }
-  }
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "shape"
-    value {
-      shape {
-        dim {
-          size: 192
-        }
-      }
-    }
-  }
-  attr {
-    key: "shared_name"
-    value {
-      s: ""
-    }
-  }
-}
-node {
-  name: "local4/Variable_1/Assign"
-  op: "Assign"
-  input: "local4/Variable_1"
-  input: "local4/Const"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@local4/Variable_1"
-      }
-    }
-  }
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 192
-          }
-        }
-      }
-    }
-  }
-  attr {
-    key: "use_locking"
-    value {
-      b: true
-    }
-  }
-  attr {
-    key: "validate_shape"
-    value {
-      b: true
-    }
-  }
-}
-node {
-  name: "local4/Variable_1/read"
-  op: "Identity"
-  input: "local4/Variable_1"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@local4/Variable_1"
-      }
-    }
-  }
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 192
-          }
-        }
-      }
-    }
-  }
-}
-node {
-  name: "local4/MatMul"
-  op: "MatMul"
-  input: "local3/local3"
-  input: "local4/Variable/read"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 120
-          }
-          dim {
-            size: 192
-          }
-        }
-      }
-    }
-  }
-  attr {
-    key: "transpose_a"
-    value {
-      b: false
-    }
-  }
-  attr {
-    key: "transpose_b"
-    value {
-      b: false
-    }
-  }
-}
-node {
-  name: "local4/add"
+  name: "dropout/dropout/add"
   op: "Add"
-  input: "local4/MatMul"
-  input: "local4/Variable_1/read"
+  input: "dropout/dropout/keep_prob"
+  input: "dropout/dropout/random_uniform"
   attr {
     key: "T"
     value {
@@ -3793,10 +3614,10 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
-            size: 192
+            size: 1024
           }
         }
       }
@@ -3804,9 +3625,9 @@ node {
   }
 }
 node {
-  name: "local4/local4"
-  op: "Relu"
-  input: "local4/add"
+  name: "dropout/dropout/Floor"
+  op: "Floor"
+  input: "dropout/dropout/add"
   attr {
     key: "T"
     value {
@@ -3819,10 +3640,10 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
-            size: 192
+            size: 1024
           }
         }
       }
@@ -3830,9 +3651,70 @@ node {
   }
 }
 node {
-  name: "softmax_linear/truncated_normal/shape"
+  name: "dropout/dropout/div"
+  op: "RealDiv"
+  input: "dense/Relu"
+  input: "dropout/dropout/keep_prob"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dropout/dropout/mul"
+  op: "Mul"
+  input: "dropout/dropout/div"
+  input: "dropout/dropout/Floor"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dense_1/kernel/Initializer/random_uniform/shape"
   op: "Const"
-  input: "^add"
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_1/kernel"
+      }
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
@@ -3861,13 +3743,708 @@ node {
             size: 2
           }
         }
-        tensor_content: "\300\000\000\000\n\000\000\000"
+        tensor_content: "\000\004\000\000\000\004\000\000"
       }
     }
   }
 }
 node {
-  name: "softmax_linear/truncated_normal/mean"
+  name: "dense_1/kernel/Initializer/random_uniform/min"
+  op: "Const"
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_1/kernel"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_FLOAT
+        tensor_shape {
+        }
+        float_val: -0.05412658676505089
+      }
+    }
+  }
+}
+node {
+  name: "dense_1/kernel/Initializer/random_uniform/max"
+  op: "Const"
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_1/kernel"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_FLOAT
+        tensor_shape {
+        }
+        float_val: 0.05412658676505089
+      }
+    }
+  }
+}
+node {
+  name: "dense_1/kernel/Initializer/random_uniform/RandomUniform"
+  op: "RandomUniform"
+  input: "dense_1/kernel/Initializer/random_uniform/shape"
+  attr {
+    key: "T"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_1/kernel"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "seed"
+    value {
+      i: 0
+    }
+  }
+  attr {
+    key: "seed2"
+    value {
+      i: 0
+    }
+  }
+}
+node {
+  name: "dense_1/kernel/Initializer/random_uniform/sub"
+  op: "Sub"
+  input: "dense_1/kernel/Initializer/random_uniform/max"
+  input: "dense_1/kernel/Initializer/random_uniform/min"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_1/kernel"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dense_1/kernel/Initializer/random_uniform/mul"
+  op: "Mul"
+  input: "dense_1/kernel/Initializer/random_uniform/RandomUniform"
+  input: "dense_1/kernel/Initializer/random_uniform/sub"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_1/kernel"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dense_1/kernel/Initializer/random_uniform"
+  op: "Add"
+  input: "dense_1/kernel/Initializer/random_uniform/mul"
+  input: "dense_1/kernel/Initializer/random_uniform/min"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_1/kernel"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dense_1/kernel"
+  op: "VariableV2"
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_1/kernel"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "container"
+    value {
+      s: ""
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "shape"
+    value {
+      shape {
+        dim {
+          size: 1024
+        }
+        dim {
+          size: 1024
+        }
+      }
+    }
+  }
+  attr {
+    key: "shared_name"
+    value {
+      s: ""
+    }
+  }
+}
+node {
+  name: "dense_1/kernel/Assign"
+  op: "Assign"
+  input: "dense_1/kernel"
+  input: "dense_1/kernel/Initializer/random_uniform"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_1/kernel"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "use_locking"
+    value {
+      b: true
+    }
+  }
+  attr {
+    key: "validate_shape"
+    value {
+      b: true
+    }
+  }
+}
+node {
+  name: "dense_1/kernel/read"
+  op: "Identity"
+  input: "dense_1/kernel"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_1/kernel"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dense_1/bias/Initializer/zeros"
+  op: "Const"
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_1/bias"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_FLOAT
+        tensor_shape {
+          dim {
+            size: 1024
+          }
+        }
+        float_val: 0.0
+      }
+    }
+  }
+}
+node {
+  name: "dense_1/bias"
+  op: "VariableV2"
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_1/bias"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "container"
+    value {
+      s: ""
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "shape"
+    value {
+      shape {
+        dim {
+          size: 1024
+        }
+      }
+    }
+  }
+  attr {
+    key: "shared_name"
+    value {
+      s: ""
+    }
+  }
+}
+node {
+  name: "dense_1/bias/Assign"
+  op: "Assign"
+  input: "dense_1/bias"
+  input: "dense_1/bias/Initializer/zeros"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_1/bias"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "use_locking"
+    value {
+      b: true
+    }
+  }
+  attr {
+    key: "validate_shape"
+    value {
+      b: true
+    }
+  }
+}
+node {
+  name: "dense_1/bias/read"
+  op: "Identity"
+  input: "dense_1/bias"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_1/bias"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dense_2/MatMul"
+  op: "MatMul"
+  input: "dropout/dropout/mul"
+  input: "dense_1/kernel/read"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "transpose_a"
+    value {
+      b: false
+    }
+  }
+  attr {
+    key: "transpose_b"
+    value {
+      b: false
+    }
+  }
+}
+node {
+  name: "dense_2/BiasAdd"
+  op: "BiasAdd"
+  input: "dense_2/MatMul"
+  input: "dense_1/bias/read"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+}
+node {
+  name: "dense_2/Relu"
+  op: "Relu"
+  input: "dense_2/BiasAdd"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dropout_2/dropout/keep_prob"
+  op: "Const"
+  input: "^add"
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_FLOAT
+        tensor_shape {
+        }
+        float_val: 0.6000000238418579
+      }
+    }
+  }
+}
+node {
+  name: "dropout_2/dropout/Shape"
+  op: "Shape"
+  input: "dense_2/Relu"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 2
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "out_type"
+    value {
+      type: DT_INT32
+    }
+  }
+}
+node {
+  name: "dropout_2/dropout/random_uniform/min"
   op: "Const"
   input: "^add"
   attr {
@@ -3898,7 +4475,7 @@ node {
   }
 }
 node {
-  name: "softmax_linear/truncated_normal/stddev"
+  name: "dropout_2/dropout/random_uniform/max"
   op: "Const"
   input: "^add"
   attr {
@@ -3923,15 +4500,15 @@ node {
         dtype: DT_FLOAT
         tensor_shape {
         }
-        float_val: 0.10000000149011612
+        float_val: 1.0
       }
     }
   }
 }
 node {
-  name: "softmax_linear/truncated_normal/TruncatedNormal"
-  op: "TruncatedNormal"
-  input: "softmax_linear/truncated_normal/shape"
+  name: "dropout_2/dropout/random_uniform/RandomUniform"
+  op: "RandomUniform"
+  input: "dropout_2/dropout/Shape"
   attr {
     key: "T"
     value {
@@ -3944,7 +4521,361 @@ node {
       list {
         shape {
           dim {
-            size: 192
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "seed"
+    value {
+      i: 0
+    }
+  }
+  attr {
+    key: "seed2"
+    value {
+      i: 0
+    }
+  }
+}
+node {
+  name: "dropout_2/dropout/random_uniform/sub"
+  op: "Sub"
+  input: "dropout_2/dropout/random_uniform/max"
+  input: "dropout_2/dropout/random_uniform/min"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dropout_2/dropout/random_uniform/mul"
+  op: "Mul"
+  input: "dropout_2/dropout/random_uniform/RandomUniform"
+  input: "dropout_2/dropout/random_uniform/sub"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dropout_2/dropout/random_uniform"
+  op: "Add"
+  input: "dropout_2/dropout/random_uniform/mul"
+  input: "dropout_2/dropout/random_uniform/min"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dropout_2/dropout/add"
+  op: "Add"
+  input: "dropout_2/dropout/keep_prob"
+  input: "dropout_2/dropout/random_uniform"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dropout_2/dropout/Floor"
+  op: "Floor"
+  input: "dropout_2/dropout/add"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dropout_2/dropout/div"
+  op: "RealDiv"
+  input: "dense_2/Relu"
+  input: "dropout_2/dropout/keep_prob"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dropout_2/dropout/mul"
+  op: "Mul"
+  input: "dropout_2/dropout/div"
+  input: "dropout_2/dropout/Floor"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dense_2/kernel/Initializer/random_uniform/shape"
+  op: "Const"
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_2/kernel"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 2
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+          dim {
+            size: 2
+          }
+        }
+        tensor_content: "\000\004\000\000\n\000\000\000"
+      }
+    }
+  }
+}
+node {
+  name: "dense_2/kernel/Initializer/random_uniform/min"
+  op: "Const"
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_2/kernel"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_FLOAT
+        tensor_shape {
+        }
+        float_val: -0.0761755108833313
+      }
+    }
+  }
+}
+node {
+  name: "dense_2/kernel/Initializer/random_uniform/max"
+  op: "Const"
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_2/kernel"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_FLOAT
+        tensor_shape {
+        }
+        float_val: 0.0761755108833313
+      }
+    }
+  }
+}
+node {
+  name: "dense_2/kernel/Initializer/random_uniform/RandomUniform"
+  op: "RandomUniform"
+  input: "dense_2/kernel/Initializer/random_uniform/shape"
+  attr {
+    key: "T"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_2/kernel"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
           }
           dim {
             size: 10
@@ -3973,14 +4904,51 @@ node {
   }
 }
 node {
-  name: "softmax_linear/truncated_normal/mul"
+  name: "dense_2/kernel/Initializer/random_uniform/sub"
+  op: "Sub"
+  input: "dense_2/kernel/Initializer/random_uniform/max"
+  input: "dense_2/kernel/Initializer/random_uniform/min"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_2/kernel"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+}
+node {
+  name: "dense_2/kernel/Initializer/random_uniform/mul"
   op: "Mul"
-  input: "softmax_linear/truncated_normal/TruncatedNormal"
-  input: "softmax_linear/truncated_normal/stddev"
+  input: "dense_2/kernel/Initializer/random_uniform/RandomUniform"
+  input: "dense_2/kernel/Initializer/random_uniform/sub"
   attr {
     key: "T"
     value {
       type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_2/kernel"
+      }
     }
   }
   attr {
@@ -3989,7 +4957,7 @@ node {
       list {
         shape {
           dim {
-            size: 192
+            size: 1024
           }
           dim {
             size: 10
@@ -4000,14 +4968,22 @@ node {
   }
 }
 node {
-  name: "softmax_linear/truncated_normal"
+  name: "dense_2/kernel/Initializer/random_uniform"
   op: "Add"
-  input: "softmax_linear/truncated_normal/mul"
-  input: "softmax_linear/truncated_normal/mean"
+  input: "dense_2/kernel/Initializer/random_uniform/mul"
+  input: "dense_2/kernel/Initializer/random_uniform/min"
   attr {
     key: "T"
     value {
       type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_2/kernel"
+      }
     }
   }
   attr {
@@ -4016,7 +4992,7 @@ node {
       list {
         shape {
           dim {
-            size: 192
+            size: 1024
           }
           dim {
             size: 10
@@ -4027,15 +5003,23 @@ node {
   }
 }
 node {
-  name: "softmax_linear/Variable"
+  name: "dense_2/kernel"
   op: "VariableV2"
   attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_2/kernel"
+      }
+    }
+  }
+  attr {
     key: "_output_shapes"
     value {
       list {
         shape {
           dim {
-            size: 192
+            size: 1024
           }
           dim {
             size: 10
@@ -4061,7 +5045,7 @@ node {
     value {
       shape {
         dim {
-          size: 192
+          size: 1024
         }
         dim {
           size: 10
@@ -4077,10 +5061,10 @@ node {
   }
 }
 node {
-  name: "softmax_linear/Variable/Assign"
+  name: "dense_2/kernel/Assign"
   op: "Assign"
-  input: "softmax_linear/Variable"
-  input: "softmax_linear/truncated_normal"
+  input: "dense_2/kernel"
+  input: "dense_2/kernel/Initializer/random_uniform"
   attr {
     key: "T"
     value {
@@ -4091,7 +5075,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@softmax_linear/Variable"
+        s: "loc:@dense_2/kernel"
       }
     }
   }
@@ -4101,7 +5085,7 @@ node {
       list {
         shape {
           dim {
-            size: 192
+            size: 1024
           }
           dim {
             size: 10
@@ -4124,9 +5108,9 @@ node {
   }
 }
 node {
-  name: "softmax_linear/Variable/read"
+  name: "dense_2/kernel/read"
   op: "Identity"
-  input: "softmax_linear/Variable"
+  input: "dense_2/kernel"
   attr {
     key: "T"
     value {
@@ -4137,7 +5121,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@softmax_linear/Variable"
+        s: "loc:@dense_2/kernel"
       }
     }
   }
@@ -4147,7 +5131,7 @@ node {
       list {
         shape {
           dim {
-            size: 192
+            size: 1024
           }
           dim {
             size: 10
@@ -4158,9 +5142,16 @@ node {
   }
 }
 node {
-  name: "softmax_linear/Const"
+  name: "dense_2/bias/Initializer/zeros"
   op: "Const"
-  input: "^add"
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_2/bias"
+      }
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
@@ -4189,14 +5180,22 @@ node {
             size: 10
           }
         }
-        float_val: 0.10000000149011612
+        float_val: 0.0
       }
     }
   }
 }
 node {
-  name: "softmax_linear/Variable_1"
+  name: "dense_2/bias"
   op: "VariableV2"
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_2/bias"
+      }
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
@@ -4239,10 +5238,10 @@ node {
   }
 }
 node {
-  name: "softmax_linear/Variable_1/Assign"
+  name: "dense_2/bias/Assign"
   op: "Assign"
-  input: "softmax_linear/Variable_1"
-  input: "softmax_linear/Const"
+  input: "dense_2/bias"
+  input: "dense_2/bias/Initializer/zeros"
   attr {
     key: "T"
     value {
@@ -4253,7 +5252,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@softmax_linear/Variable_1"
+        s: "loc:@dense_2/bias"
       }
     }
   }
@@ -4283,9 +5282,9 @@ node {
   }
 }
 node {
-  name: "softmax_linear/Variable_1/read"
+  name: "dense_2/bias/read"
   op: "Identity"
-  input: "softmax_linear/Variable_1"
+  input: "dense_2/bias"
   attr {
     key: "T"
     value {
@@ -4296,7 +5295,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@softmax_linear/Variable_1"
+        s: "loc:@dense_2/bias"
       }
     }
   }
@@ -4314,10 +5313,10 @@ node {
   }
 }
 node {
-  name: "softmax_linear/MatMul"
+  name: "dense_3/MatMul"
   op: "MatMul"
-  input: "local4/local4"
-  input: "softmax_linear/Variable/read"
+  input: "dropout_2/dropout/mul"
+  input: "dense_2/kernel/read"
   attr {
     key: "T"
     value {
@@ -4330,7 +5329,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 10
@@ -4353,10 +5352,10 @@ node {
   }
 }
 node {
-  name: "softmax_linear/softmax_linear"
-  op: "Add"
-  input: "softmax_linear/MatMul"
-  input: "softmax_linear/Variable_1/read"
+  name: "dense_3/BiasAdd"
+  op: "BiasAdd"
+  input: "dense_3/MatMul"
+  input: "dense_2/bias/read"
   attr {
     key: "T"
     value {
@@ -4369,13 +5368,19 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 10
           }
         }
       }
+    }
+  }
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
     }
   }
 }
@@ -4413,7 +5418,7 @@ node {
 node {
   name: "ArgMax"
   op: "ArgMax"
-  input: "softmax_linear/softmax_linear"
+  input: "dense_3/BiasAdd"
   input: "ArgMax/dimension"
   attr {
     key: "T"
@@ -4433,7 +5438,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
         }
       }
@@ -4449,7 +5454,7 @@ node {
 node {
   name: "softmax_tensor"
   op: "Softmax"
-  input: "softmax_linear/softmax_linear"
+  input: "dense_3/BiasAdd"
   attr {
     key: "T"
     value {
@@ -4462,7 +5467,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 10
@@ -4568,7 +5573,7 @@ node {
 node {
   name: "one_hot"
   op: "OneHot"
-  input: "random_shuffle_queue_DequeueMany:2"
+  input: "random_shuffle_queue_DequeueUpTo:2"
   input: "one_hot/depth"
   input: "one_hot/on_value"
   input: "one_hot/off_value"
@@ -4590,7 +5595,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 10
@@ -4639,8 +5644,14 @@ node {
 }
 node {
   name: "softmax_cross_entropy_loss/Shape"
-  op: "Const"
-  input: "^add"
+  op: "Shape"
+  input: "dense_3/BiasAdd"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
@@ -4654,23 +5665,9 @@ node {
     }
   }
   attr {
-    key: "dtype"
+    key: "out_type"
     value {
       type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 2
-          }
-        }
-        tensor_content: "x\000\000\000\n\000\000\000"
-      }
     }
   }
 }
@@ -4707,8 +5704,14 @@ node {
 }
 node {
   name: "softmax_cross_entropy_loss/Shape_1"
-  op: "Const"
-  input: "^add"
+  op: "Shape"
+  input: "dense_3/BiasAdd"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
@@ -4722,23 +5725,9 @@ node {
     }
   }
   attr {
-    key: "dtype"
+    key: "out_type"
     value {
       type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 2
-          }
-        }
-        tensor_content: "x\000\000\000\n\000\000\000"
-      }
     }
   }
 }
@@ -5005,7 +5994,7 @@ node {
 node {
   name: "softmax_cross_entropy_loss/Reshape"
   op: "Reshape"
-  input: "softmax_linear/softmax_linear"
+  input: "dense_3/BiasAdd"
   input: "softmax_cross_entropy_loss/concat"
   attr {
     key: "T"
@@ -5025,10 +6014,10 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
-            size: 10
+            size: -1
           }
         }
       }
@@ -5068,8 +6057,14 @@ node {
 }
 node {
   name: "softmax_cross_entropy_loss/Shape_2"
-  op: "Const"
-  input: "^add"
+  op: "Shape"
+  input: "one_hot"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
@@ -5083,23 +6078,9 @@ node {
     }
   }
   attr {
-    key: "dtype"
+    key: "out_type"
     value {
       type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 2
-          }
-        }
-        tensor_content: "x\000\000\000\n\000\000\000"
-      }
     }
   }
 }
@@ -5386,10 +6367,10 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
-            size: 10
+            size: -1
           }
         }
       }
@@ -5413,15 +6394,15 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
         }
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
-            size: 10
+            size: -1
           }
         }
       }
@@ -5606,7 +6587,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
         }
       }
@@ -5711,8 +6692,14 @@ node {
 }
 node {
   name: "softmax_cross_entropy_loss/assert_broadcastable/values/shape"
-  op: "Const"
-  input: "^add"
+  op: "Shape"
+  input: "softmax_cross_entropy_loss/Reshape_2"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
@@ -5726,23 +6713,9 @@ node {
     }
   }
   attr {
-    key: "dtype"
+    key: "out_type"
     value {
       type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 120
-      }
     }
   }
 }
@@ -5831,7 +6804,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
         }
       }
@@ -6173,9 +7146,15 @@ node {
 }
 node {
   name: "softmax_cross_entropy_loss/num_present/broadcast_weights/assert_broadcastable/values/shape"
-  op: "Const"
-  input: "^add"
+  op: "Shape"
+  input: "softmax_cross_entropy_loss/Reshape_2"
   input: "^softmax_cross_entropy_loss/assert_broadcastable/static_scalar_check_success"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
@@ -6189,23 +7168,9 @@ node {
     }
   }
   attr {
-    key: "dtype"
+    key: "out_type"
     value {
       type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 120
-      }
     }
   }
 }
@@ -6249,10 +7214,16 @@ node {
 }
 node {
   name: "softmax_cross_entropy_loss/num_present/broadcast_weights/ones_like/Shape"
-  op: "Const"
-  input: "^add"
+  op: "Shape"
+  input: "softmax_cross_entropy_loss/Reshape_2"
   input: "^softmax_cross_entropy_loss/assert_broadcastable/static_scalar_check_success"
   input: "^softmax_cross_entropy_loss/num_present/broadcast_weights/assert_broadcastable/static_scalar_check_success"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
@@ -6266,23 +7237,9 @@ node {
     }
   }
   attr {
-    key: "dtype"
+    key: "out_type"
     value {
       type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 120
-      }
     }
   }
 }
@@ -6336,7 +7293,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
         }
       }
@@ -6360,7 +7317,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
         }
       }
@@ -7534,6 +8491,146 @@ node {
   }
 }
 node {
+  name: "gradients/softmax_cross_entropy_loss/Select_grad/zeros_like"
+  op: "Const"
+  input: "^add"
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_FLOAT
+        tensor_shape {
+        }
+        float_val: 0.0
+      }
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/Select_grad/Select"
+  op: "Select"
+  input: "softmax_cross_entropy_loss/Equal"
+  input: "gradients/softmax_cross_entropy_loss/div_grad/tuple/control_dependency_1"
+  input: "gradients/softmax_cross_entropy_loss/Select_grad/zeros_like"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/Select_grad/Select_1"
+  op: "Select"
+  input: "softmax_cross_entropy_loss/Equal"
+  input: "gradients/softmax_cross_entropy_loss/Select_grad/zeros_like"
+  input: "gradients/softmax_cross_entropy_loss/div_grad/tuple/control_dependency_1"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/Select_grad/tuple/group_deps"
+  op: "NoOp"
+  input: "^add"
+  input: "^gradients/softmax_cross_entropy_loss/Select_grad/Select"
+  input: "^gradients/softmax_cross_entropy_loss/Select_grad/Select_1"
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/Select_grad/tuple/control_dependency"
+  op: "Identity"
+  input: "gradients/softmax_cross_entropy_loss/Select_grad/Select"
+  input: "^gradients/softmax_cross_entropy_loss/Select_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@gradients/softmax_cross_entropy_loss/Select_grad/Select"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/Select_grad/tuple/control_dependency_1"
+  op: "Identity"
+  input: "gradients/softmax_cross_entropy_loss/Select_grad/Select_1"
+  input: "^gradients/softmax_cross_entropy_loss/Select_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@gradients/softmax_cross_entropy_loss/Select_grad/Select_1"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+}
+node {
   name: "gradients/softmax_cross_entropy_loss/Sum_grad/Reshape/shape"
   op: "Const"
   input: "^add"
@@ -7601,9 +8698,15 @@ node {
   }
 }
 node {
-  name: "gradients/softmax_cross_entropy_loss/Sum_grad/Tile/multiples"
-  op: "Const"
-  input: "^add"
+  name: "gradients/softmax_cross_entropy_loss/Sum_grad/Shape"
+  op: "Shape"
+  input: "softmax_cross_entropy_loss/Mul"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
@@ -7617,23 +8720,9 @@ node {
     }
   }
   attr {
-    key: "dtype"
+    key: "out_type"
     value {
       type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 120
-      }
     }
   }
 }
@@ -7641,7 +8730,7 @@ node {
   name: "gradients/softmax_cross_entropy_loss/Sum_grad/Tile"
   op: "Tile"
   input: "gradients/softmax_cross_entropy_loss/Sum_grad/Reshape"
-  input: "gradients/softmax_cross_entropy_loss/Sum_grad/Tile/multiples"
+  input: "gradients/softmax_cross_entropy_loss/Sum_grad/Shape"
   attr {
     key: "T"
     value {
@@ -7660,7 +8749,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
         }
       }
@@ -7669,8 +8758,14 @@ node {
 }
 node {
   name: "gradients/softmax_cross_entropy_loss/Mul_grad/Shape"
-  op: "Const"
-  input: "^add"
+  op: "Shape"
+  input: "softmax_cross_entropy_loss/Reshape_2"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
@@ -7684,23 +8779,9 @@ node {
     }
   }
   attr {
-    key: "dtype"
+    key: "out_type"
     value {
       type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 120
-      }
     }
   }
 }
@@ -7784,7 +8865,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
         }
       }
@@ -7848,7 +8929,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
         }
       }
@@ -7872,7 +8953,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
         }
       }
@@ -7972,7 +9053,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
         }
       }
@@ -8009,7 +9090,7 @@ node {
   }
 }
 node {
-  name: "gradients/softmax_cross_entropy_loss/Reshape_2_grad/Shape"
+  name: "gradients/softmax_cross_entropy_loss/num_present_grad/Reshape/shape"
   op: "Const"
   input: "^add"
   attr {
@@ -8040,8 +9121,529 @@ node {
             size: 1
           }
         }
-        int_val: 120
+        int_val: 1
       }
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/num_present_grad/Reshape"
+  op: "Reshape"
+  input: "gradients/softmax_cross_entropy_loss/Select_grad/tuple/control_dependency_1"
+  input: "gradients/softmax_cross_entropy_loss/num_present_grad/Reshape/shape"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tshape"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/num_present_grad/Shape"
+  op: "Shape"
+  input: "softmax_cross_entropy_loss/num_present/broadcast_weights"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "out_type"
+    value {
+      type: DT_INT32
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/num_present_grad/Tile"
+  op: "Tile"
+  input: "gradients/softmax_cross_entropy_loss/num_present_grad/Reshape"
+  input: "gradients/softmax_cross_entropy_loss/num_present_grad/Shape"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tmultiples"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Shape"
+  op: "Const"
+  input: "^add"
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+          dim {
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Shape_1"
+  op: "Shape"
+  input: "softmax_cross_entropy_loss/num_present/broadcast_weights/ones_like"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "out_type"
+    value {
+      type: DT_INT32
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/BroadcastGradientArgs"
+  op: "BroadcastGradientArgs"
+  input: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Shape"
+  input: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Shape_1"
+  attr {
+    key: "T"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+        }
+        shape {
+          dim {
+            size: -1
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/mul"
+  op: "Mul"
+  input: "gradients/softmax_cross_entropy_loss/num_present_grad/Tile"
+  input: "softmax_cross_entropy_loss/num_present/broadcast_weights/ones_like"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Sum"
+  op: "Sum"
+  input: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/mul"
+  input: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/BroadcastGradientArgs"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tidx"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          unknown_rank: true
+        }
+      }
+    }
+  }
+  attr {
+    key: "keep_dims"
+    value {
+      b: false
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Reshape"
+  op: "Reshape"
+  input: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Sum"
+  input: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Shape"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tshape"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/mul_1"
+  op: "Mul"
+  input: "softmax_cross_entropy_loss/num_present/Select"
+  input: "gradients/softmax_cross_entropy_loss/num_present_grad/Tile"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Sum_1"
+  op: "Sum"
+  input: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/mul_1"
+  input: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/BroadcastGradientArgs:1"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tidx"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          unknown_rank: true
+        }
+      }
+    }
+  }
+  attr {
+    key: "keep_dims"
+    value {
+      b: false
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Reshape_1"
+  op: "Reshape"
+  input: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Sum_1"
+  input: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Shape_1"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tshape"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/tuple/group_deps"
+  op: "NoOp"
+  input: "^add"
+  input: "^gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Reshape"
+  input: "^gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Reshape_1"
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/tuple/control_dependency"
+  op: "Identity"
+  input: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Reshape"
+  input: "^gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Reshape"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/tuple/control_dependency_1"
+  op: "Identity"
+  input: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Reshape_1"
+  input: "^gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/Reshape_1"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights/ones_like_grad/Const"
+  op: "Const"
+  input: "^add"
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+          dim {
+            size: 1
+          }
+        }
+        int_val: 0
+      }
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights/ones_like_grad/Sum"
+  op: "Sum"
+  input: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights_grad/tuple/control_dependency_1"
+  input: "gradients/softmax_cross_entropy_loss/num_present/broadcast_weights/ones_like_grad/Const"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tidx"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+  attr {
+    key: "keep_dims"
+    value {
+      b: false
+    }
+  }
+}
+node {
+  name: "gradients/softmax_cross_entropy_loss/Reshape_2_grad/Shape"
+  op: "Shape"
+  input: "softmax_cross_entropy_loss/xentropy"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "out_type"
+    value {
+      type: DT_INT32
     }
   }
 }
@@ -8068,7 +9670,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
         }
       }
@@ -8091,10 +9693,10 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
-            size: 10
+            size: -1
           }
         }
       }
@@ -8155,7 +9757,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 1
@@ -8182,10 +9784,10 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
-            size: 10
+            size: -1
           }
         }
       }
@@ -8194,8 +9796,14 @@ node {
 }
 node {
   name: "gradients/softmax_cross_entropy_loss/Reshape_grad/Shape"
-  op: "Const"
-  input: "^add"
+  op: "Shape"
+  input: "dense_3/BiasAdd"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
@@ -8209,23 +9817,9 @@ node {
     }
   }
   attr {
-    key: "dtype"
+    key: "out_type"
     value {
       type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 2
-          }
-        }
-        tensor_content: "x\000\000\000\n\000\000\000"
-      }
     }
   }
 }
@@ -8252,7 +9846,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 10
@@ -8263,113 +9857,9 @@ node {
   }
 }
 node {
-  name: "gradients/softmax_linear/softmax_linear_grad/Shape"
-  op: "Const"
-  input: "^add"
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 2
-          }
-        }
-      }
-    }
-  }
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 2
-          }
-        }
-        tensor_content: "x\000\000\000\n\000\000\000"
-      }
-    }
-  }
-}
-node {
-  name: "gradients/softmax_linear/softmax_linear_grad/Shape_1"
-  op: "Const"
-  input: "^add"
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 1
-          }
-        }
-      }
-    }
-  }
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 10
-      }
-    }
-  }
-}
-node {
-  name: "gradients/softmax_linear/softmax_linear_grad/BroadcastGradientArgs"
-  op: "BroadcastGradientArgs"
-  input: "gradients/softmax_linear/softmax_linear_grad/Shape"
-  input: "gradients/softmax_linear/softmax_linear_grad/Shape_1"
-  attr {
-    key: "T"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: -1
-          }
-        }
-        shape {
-          dim {
-            size: -1
-          }
-        }
-      }
-    }
-  }
-}
-node {
-  name: "gradients/softmax_linear/softmax_linear_grad/Sum"
-  op: "Sum"
+  name: "gradients/dense_3/BiasAdd_grad/BiasAddGrad"
+  op: "BiasAddGrad"
   input: "gradients/softmax_cross_entropy_loss/Reshape_grad/Reshape"
-  input: "gradients/softmax_linear/softmax_linear_grad/BroadcastGradientArgs"
   attr {
     key: "T"
     value {
@@ -8377,53 +9867,10 @@ node {
     }
   }
   attr {
-    key: "Tidx"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
     key: "_output_shapes"
     value {
       list {
         shape {
-          unknown_rank: true
-        }
-      }
-    }
-  }
-  attr {
-    key: "keep_dims"
-    value {
-      b: false
-    }
-  }
-}
-node {
-  name: "gradients/softmax_linear/softmax_linear_grad/Reshape"
-  op: "Reshape"
-  input: "gradients/softmax_linear/softmax_linear_grad/Sum"
-  input: "gradients/softmax_linear/softmax_linear_grad/Shape"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "Tshape"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 120
-          }
           dim {
             size: 10
           }
@@ -8431,83 +9878,25 @@ node {
       }
     }
   }
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
 }
 node {
-  name: "gradients/softmax_linear/softmax_linear_grad/Sum_1"
-  op: "Sum"
+  name: "gradients/dense_3/BiasAdd_grad/tuple/group_deps"
+  op: "NoOp"
+  input: "^add"
+  input: "^gradients/softmax_cross_entropy_loss/Reshape_grad/Reshape"
+  input: "^gradients/dense_3/BiasAdd_grad/BiasAddGrad"
+}
+node {
+  name: "gradients/dense_3/BiasAdd_grad/tuple/control_dependency"
+  op: "Identity"
   input: "gradients/softmax_cross_entropy_loss/Reshape_grad/Reshape"
-  input: "gradients/softmax_linear/softmax_linear_grad/BroadcastGradientArgs:1"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "Tidx"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          unknown_rank: true
-        }
-      }
-    }
-  }
-  attr {
-    key: "keep_dims"
-    value {
-      b: false
-    }
-  }
-}
-node {
-  name: "gradients/softmax_linear/softmax_linear_grad/Reshape_1"
-  op: "Reshape"
-  input: "gradients/softmax_linear/softmax_linear_grad/Sum_1"
-  input: "gradients/softmax_linear/softmax_linear_grad/Shape_1"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "Tshape"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 10
-          }
-        }
-      }
-    }
-  }
-}
-node {
-  name: "gradients/softmax_linear/softmax_linear_grad/tuple/group_deps"
-  op: "NoOp"
-  input: "^add"
-  input: "^gradients/softmax_linear/softmax_linear_grad/Reshape"
-  input: "^gradients/softmax_linear/softmax_linear_grad/Reshape_1"
-}
-node {
-  name: "gradients/softmax_linear/softmax_linear_grad/tuple/control_dependency"
-  op: "Identity"
-  input: "gradients/softmax_linear/softmax_linear_grad/Reshape"
-  input: "^gradients/softmax_linear/softmax_linear_grad/tuple/group_deps"
+  input: "^gradients/dense_3/BiasAdd_grad/tuple/group_deps"
   attr {
     key: "T"
     value {
@@ -8518,7 +9907,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@gradients/softmax_linear/softmax_linear_grad/Reshape"
+        s: "loc:@gradients/softmax_cross_entropy_loss/Reshape_grad/Reshape"
       }
     }
   }
@@ -8528,7 +9917,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 10
@@ -8539,10 +9928,10 @@ node {
   }
 }
 node {
-  name: "gradients/softmax_linear/softmax_linear_grad/tuple/control_dependency_1"
+  name: "gradients/dense_3/BiasAdd_grad/tuple/control_dependency_1"
   op: "Identity"
-  input: "gradients/softmax_linear/softmax_linear_grad/Reshape_1"
-  input: "^gradients/softmax_linear/softmax_linear_grad/tuple/group_deps"
+  input: "gradients/dense_3/BiasAdd_grad/BiasAddGrad"
+  input: "^gradients/dense_3/BiasAdd_grad/tuple/group_deps"
   attr {
     key: "T"
     value {
@@ -8553,7 +9942,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@gradients/softmax_linear/softmax_linear_grad/Reshape_1"
+        s: "loc:@gradients/dense_3/BiasAdd_grad/BiasAddGrad"
       }
     }
   }
@@ -8571,10 +9960,10 @@ node {
   }
 }
 node {
-  name: "gradients/softmax_linear/MatMul_grad/MatMul"
+  name: "gradients/dense_3/MatMul_grad/MatMul"
   op: "MatMul"
-  input: "gradients/softmax_linear/softmax_linear_grad/tuple/control_dependency"
-  input: "softmax_linear/Variable/read"
+  input: "gradients/dense_3/BiasAdd_grad/tuple/control_dependency"
+  input: "dense_2/kernel/read"
   attr {
     key: "T"
     value {
@@ -8587,10 +9976,10 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
-            size: 192
+            size: 1024
           }
         }
       }
@@ -8610,10 +9999,10 @@ node {
   }
 }
 node {
-  name: "gradients/softmax_linear/MatMul_grad/MatMul_1"
+  name: "gradients/dense_3/MatMul_grad/MatMul_1"
   op: "MatMul"
-  input: "local4/local4"
-  input: "gradients/softmax_linear/softmax_linear_grad/tuple/control_dependency"
+  input: "dropout_2/dropout/mul"
+  input: "gradients/dense_3/BiasAdd_grad/tuple/control_dependency"
   attr {
     key: "T"
     value {
@@ -8626,7 +10015,7 @@ node {
       list {
         shape {
           dim {
-            size: 192
+            size: 1024
           }
           dim {
             size: 10
@@ -8649,17 +10038,17 @@ node {
   }
 }
 node {
-  name: "gradients/softmax_linear/MatMul_grad/tuple/group_deps"
+  name: "gradients/dense_3/MatMul_grad/tuple/group_deps"
   op: "NoOp"
   input: "^add"
-  input: "^gradients/softmax_linear/MatMul_grad/MatMul"
-  input: "^gradients/softmax_linear/MatMul_grad/MatMul_1"
+  input: "^gradients/dense_3/MatMul_grad/MatMul"
+  input: "^gradients/dense_3/MatMul_grad/MatMul_1"
 }
 node {
-  name: "gradients/softmax_linear/MatMul_grad/tuple/control_dependency"
+  name: "gradients/dense_3/MatMul_grad/tuple/control_dependency"
   op: "Identity"
-  input: "gradients/softmax_linear/MatMul_grad/MatMul"
-  input: "^gradients/softmax_linear/MatMul_grad/tuple/group_deps"
+  input: "gradients/dense_3/MatMul_grad/MatMul"
+  input: "^gradients/dense_3/MatMul_grad/tuple/group_deps"
   attr {
     key: "T"
     value {
@@ -8670,7 +10059,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@gradients/softmax_linear/MatMul_grad/MatMul"
+        s: "loc:@gradients/dense_3/MatMul_grad/MatMul"
       }
     }
   }
@@ -8680,10 +10069,10 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
-            size: 192
+            size: 1024
           }
         }
       }
@@ -8691,10 +10080,10 @@ node {
   }
 }
 node {
-  name: "gradients/softmax_linear/MatMul_grad/tuple/control_dependency_1"
+  name: "gradients/dense_3/MatMul_grad/tuple/control_dependency_1"
   op: "Identity"
-  input: "gradients/softmax_linear/MatMul_grad/MatMul_1"
-  input: "^gradients/softmax_linear/MatMul_grad/tuple/group_deps"
+  input: "gradients/dense_3/MatMul_grad/MatMul_1"
+  input: "^gradients/dense_3/MatMul_grad/tuple/group_deps"
   attr {
     key: "T"
     value {
@@ -8705,7 +10094,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@gradients/softmax_linear/MatMul_grad/MatMul_1"
+        s: "loc:@gradients/dense_3/MatMul_grad/MatMul_1"
       }
     }
   }
@@ -8715,7 +10104,7 @@ node {
       list {
         shape {
           dim {
-            size: 192
+            size: 1024
           }
           dim {
             size: 10
@@ -8726,10 +10115,9 @@ node {
   }
 }
 node {
-  name: "gradients/local4/local4_grad/ReluGrad"
-  op: "ReluGrad"
-  input: "gradients/softmax_linear/MatMul_grad/tuple/control_dependency"
-  input: "local4/local4"
+  name: "gradients/dropout_2/dropout/mul_grad/Shape"
+  op: "Shape"
+  input: "dropout_2/dropout/div"
   attr {
     key: "T"
     value {
@@ -8742,20 +10130,29 @@ node {
       list {
         shape {
           dim {
-            size: 120
-          }
-          dim {
-            size: 192
+            size: 2
           }
         }
       }
     }
   }
+  attr {
+    key: "out_type"
+    value {
+      type: DT_INT32
+    }
+  }
 }
 node {
-  name: "gradients/local4/add_grad/Shape"
-  op: "Const"
-  input: "^add"
+  name: "gradients/dropout_2/dropout/mul_grad/Shape_1"
+  op: "Shape"
+  input: "dropout_2/dropout/Floor"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
@@ -8769,68 +10166,17 @@ node {
     }
   }
   attr {
-    key: "dtype"
+    key: "out_type"
     value {
       type: DT_INT32
     }
   }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 2
-          }
-        }
-        tensor_content: "x\000\000\000\300\000\000\000"
-      }
-    }
-  }
 }
 node {
-  name: "gradients/local4/add_grad/Shape_1"
-  op: "Const"
-  input: "^add"
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 1
-          }
-        }
-      }
-    }
-  }
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 192
-      }
-    }
-  }
-}
-node {
-  name: "gradients/local4/add_grad/BroadcastGradientArgs"
+  name: "gradients/dropout_2/dropout/mul_grad/BroadcastGradientArgs"
   op: "BroadcastGradientArgs"
-  input: "gradients/local4/add_grad/Shape"
-  input: "gradients/local4/add_grad/Shape_1"
+  input: "gradients/dropout_2/dropout/mul_grad/Shape"
+  input: "gradients/dropout_2/dropout/mul_grad/Shape_1"
   attr {
     key: "T"
     value {
@@ -8856,10 +10202,37 @@ node {
   }
 }
 node {
-  name: "gradients/local4/add_grad/Sum"
+  name: "gradients/dropout_2/dropout/mul_grad/mul"
+  op: "Mul"
+  input: "gradients/dense_3/MatMul_grad/tuple/control_dependency"
+  input: "dropout_2/dropout/Floor"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout_2/dropout/mul_grad/Sum"
   op: "Sum"
-  input: "gradients/local4/local4_grad/ReluGrad"
-  input: "gradients/local4/add_grad/BroadcastGradientArgs"
+  input: "gradients/dropout_2/dropout/mul_grad/mul"
+  input: "gradients/dropout_2/dropout/mul_grad/BroadcastGradientArgs"
   attr {
     key: "T"
     value {
@@ -8890,10 +10263,10 @@ node {
   }
 }
 node {
-  name: "gradients/local4/add_grad/Reshape"
+  name: "gradients/dropout_2/dropout/mul_grad/Reshape"
   op: "Reshape"
-  input: "gradients/local4/add_grad/Sum"
-  input: "gradients/local4/add_grad/Shape"
+  input: "gradients/dropout_2/dropout/mul_grad/Sum"
+  input: "gradients/dropout_2/dropout/mul_grad/Shape"
   attr {
     key: "T"
     value {
@@ -8912,10 +10285,10 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
-            size: 192
+            size: 1024
           }
         }
       }
@@ -8923,10 +10296,37 @@ node {
   }
 }
 node {
-  name: "gradients/local4/add_grad/Sum_1"
+  name: "gradients/dropout_2/dropout/mul_grad/mul_1"
+  op: "Mul"
+  input: "dropout_2/dropout/div"
+  input: "gradients/dense_3/MatMul_grad/tuple/control_dependency"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout_2/dropout/mul_grad/Sum_1"
   op: "Sum"
-  input: "gradients/local4/local4_grad/ReluGrad"
-  input: "gradients/local4/add_grad/BroadcastGradientArgs:1"
+  input: "gradients/dropout_2/dropout/mul_grad/mul_1"
+  input: "gradients/dropout_2/dropout/mul_grad/BroadcastGradientArgs:1"
   attr {
     key: "T"
     value {
@@ -8957,10 +10357,10 @@ node {
   }
 }
 node {
-  name: "gradients/local4/add_grad/Reshape_1"
+  name: "gradients/dropout_2/dropout/mul_grad/Reshape_1"
   op: "Reshape"
-  input: "gradients/local4/add_grad/Sum_1"
-  input: "gradients/local4/add_grad/Shape_1"
+  input: "gradients/dropout_2/dropout/mul_grad/Sum_1"
+  input: "gradients/dropout_2/dropout/mul_grad/Shape_1"
   attr {
     key: "T"
     value {
@@ -8979,7 +10379,10 @@ node {
       list {
         shape {
           dim {
-            size: 192
+            size: -1
+          }
+          dim {
+            size: 1024
           }
         }
       }
@@ -8987,17 +10390,17 @@ node {
   }
 }
 node {
-  name: "gradients/local4/add_grad/tuple/group_deps"
+  name: "gradients/dropout_2/dropout/mul_grad/tuple/group_deps"
   op: "NoOp"
   input: "^add"
-  input: "^gradients/local4/add_grad/Reshape"
-  input: "^gradients/local4/add_grad/Reshape_1"
+  input: "^gradients/dropout_2/dropout/mul_grad/Reshape"
+  input: "^gradients/dropout_2/dropout/mul_grad/Reshape_1"
 }
 node {
-  name: "gradients/local4/add_grad/tuple/control_dependency"
+  name: "gradients/dropout_2/dropout/mul_grad/tuple/control_dependency"
   op: "Identity"
-  input: "gradients/local4/add_grad/Reshape"
-  input: "^gradients/local4/add_grad/tuple/group_deps"
+  input: "gradients/dropout_2/dropout/mul_grad/Reshape"
+  input: "^gradients/dropout_2/dropout/mul_grad/tuple/group_deps"
   attr {
     key: "T"
     value {
@@ -9008,7 +10411,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@gradients/local4/add_grad/Reshape"
+        s: "loc:@gradients/dropout_2/dropout/mul_grad/Reshape"
       }
     }
   }
@@ -9018,10 +10421,10 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
-            size: 192
+            size: 1024
           }
         }
       }
@@ -9029,10 +10432,10 @@ node {
   }
 }
 node {
-  name: "gradients/local4/add_grad/tuple/control_dependency_1"
+  name: "gradients/dropout_2/dropout/mul_grad/tuple/control_dependency_1"
   op: "Identity"
-  input: "gradients/local4/add_grad/Reshape_1"
-  input: "^gradients/local4/add_grad/tuple/group_deps"
+  input: "gradients/dropout_2/dropout/mul_grad/Reshape_1"
+  input: "^gradients/dropout_2/dropout/mul_grad/tuple/group_deps"
   attr {
     key: "T"
     value {
@@ -9043,7 +10446,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@gradients/local4/add_grad/Reshape_1"
+        s: "loc:@gradients/dropout_2/dropout/mul_grad/Reshape_1"
       }
     }
   }
@@ -9053,7 +10456,10 @@ node {
       list {
         shape {
           dim {
-            size: 192
+            size: -1
+          }
+          dim {
+            size: 1024
           }
         }
       }
@@ -9061,10 +10467,9 @@ node {
   }
 }
 node {
-  name: "gradients/local4/MatMul_grad/MatMul"
-  op: "MatMul"
-  input: "gradients/local4/add_grad/tuple/control_dependency"
-  input: "local4/Variable/read"
+  name: "gradients/dropout_2/dropout/div_grad/Shape"
+  op: "Shape"
+  input: "dense_2/Relu"
   attr {
     key: "T"
     value {
@@ -9077,173 +10482,21 @@ node {
       list {
         shape {
           dim {
-            size: 120
-          }
-          dim {
-            size: 384
+            size: 2
           }
         }
       }
     }
   }
   attr {
-    key: "transpose_a"
+    key: "out_type"
     value {
-      b: false
-    }
-  }
-  attr {
-    key: "transpose_b"
-    value {
-      b: true
+      type: DT_INT32
     }
   }
 }
 node {
-  name: "gradients/local4/MatMul_grad/MatMul_1"
-  op: "MatMul"
-  input: "local3/local3"
-  input: "gradients/local4/add_grad/tuple/control_dependency"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 384
-          }
-          dim {
-            size: 192
-          }
-        }
-      }
-    }
-  }
-  attr {
-    key: "transpose_a"
-    value {
-      b: true
-    }
-  }
-  attr {
-    key: "transpose_b"
-    value {
-      b: false
-    }
-  }
-}
-node {
-  name: "gradients/local4/MatMul_grad/tuple/group_deps"
-  op: "NoOp"
-  input: "^add"
-  input: "^gradients/local4/MatMul_grad/MatMul"
-  input: "^gradients/local4/MatMul_grad/MatMul_1"
-}
-node {
-  name: "gradients/local4/MatMul_grad/tuple/control_dependency"
-  op: "Identity"
-  input: "gradients/local4/MatMul_grad/MatMul"
-  input: "^gradients/local4/MatMul_grad/tuple/group_deps"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@gradients/local4/MatMul_grad/MatMul"
-      }
-    }
-  }
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 120
-          }
-          dim {
-            size: 384
-          }
-        }
-      }
-    }
-  }
-}
-node {
-  name: "gradients/local4/MatMul_grad/tuple/control_dependency_1"
-  op: "Identity"
-  input: "gradients/local4/MatMul_grad/MatMul_1"
-  input: "^gradients/local4/MatMul_grad/tuple/group_deps"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@gradients/local4/MatMul_grad/MatMul_1"
-      }
-    }
-  }
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 384
-          }
-          dim {
-            size: 192
-          }
-        }
-      }
-    }
-  }
-}
-node {
-  name: "gradients/local3/local3_grad/ReluGrad"
-  op: "ReluGrad"
-  input: "gradients/local4/MatMul_grad/tuple/control_dependency"
-  input: "local3/local3"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 120
-          }
-          dim {
-            size: 384
-          }
-        }
-      }
-    }
-  }
-}
-node {
-  name: "gradients/local3/add_grad/Shape"
+  name: "gradients/dropout_2/dropout/div_grad/Shape_1"
   op: "Const"
   input: "^add"
   attr {
@@ -9252,7 +10505,6 @@ node {
       list {
         shape {
           dim {
-            size: 2
           }
         }
       }
@@ -9271,56 +10523,17 @@ node {
         dtype: DT_INT32
         tensor_shape {
           dim {
-            size: 2
           }
         }
-        tensor_content: "x\000\000\000\200\001\000\000"
       }
     }
   }
 }
 node {
-  name: "gradients/local3/add_grad/Shape_1"
-  op: "Const"
-  input: "^add"
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 1
-          }
-        }
-      }
-    }
-  }
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 384
-      }
-    }
-  }
-}
-node {
-  name: "gradients/local3/add_grad/BroadcastGradientArgs"
+  name: "gradients/dropout_2/dropout/div_grad/BroadcastGradientArgs"
   op: "BroadcastGradientArgs"
-  input: "gradients/local3/add_grad/Shape"
-  input: "gradients/local3/add_grad/Shape_1"
+  input: "gradients/dropout_2/dropout/div_grad/Shape"
+  input: "gradients/dropout_2/dropout/div_grad/Shape_1"
   attr {
     key: "T"
     value {
@@ -9346,10 +10559,37 @@ node {
   }
 }
 node {
-  name: "gradients/local3/add_grad/Sum"
+  name: "gradients/dropout_2/dropout/div_grad/RealDiv"
+  op: "RealDiv"
+  input: "gradients/dropout_2/dropout/mul_grad/tuple/control_dependency"
+  input: "dropout_2/dropout/keep_prob"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout_2/dropout/div_grad/Sum"
   op: "Sum"
-  input: "gradients/local3/local3_grad/ReluGrad"
-  input: "gradients/local3/add_grad/BroadcastGradientArgs"
+  input: "gradients/dropout_2/dropout/div_grad/RealDiv"
+  input: "gradients/dropout_2/dropout/div_grad/BroadcastGradientArgs"
   attr {
     key: "T"
     value {
@@ -9380,10 +10620,10 @@ node {
   }
 }
 node {
-  name: "gradients/local3/add_grad/Reshape"
+  name: "gradients/dropout_2/dropout/div_grad/Reshape"
   op: "Reshape"
-  input: "gradients/local3/add_grad/Sum"
-  input: "gradients/local3/add_grad/Shape"
+  input: "gradients/dropout_2/dropout/div_grad/Sum"
+  input: "gradients/dropout_2/dropout/div_grad/Shape"
   attr {
     key: "T"
     value {
@@ -9402,10 +10642,10 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -9413,10 +10653,117 @@ node {
   }
 }
 node {
-  name: "gradients/local3/add_grad/Sum_1"
+  name: "gradients/dropout_2/dropout/div_grad/Neg"
+  op: "Neg"
+  input: "dense_2/Relu"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout_2/dropout/div_grad/RealDiv_1"
+  op: "RealDiv"
+  input: "gradients/dropout_2/dropout/div_grad/Neg"
+  input: "dropout_2/dropout/keep_prob"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout_2/dropout/div_grad/RealDiv_2"
+  op: "RealDiv"
+  input: "gradients/dropout_2/dropout/div_grad/RealDiv_1"
+  input: "dropout_2/dropout/keep_prob"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout_2/dropout/div_grad/mul"
+  op: "Mul"
+  input: "gradients/dropout_2/dropout/mul_grad/tuple/control_dependency"
+  input: "gradients/dropout_2/dropout/div_grad/RealDiv_2"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout_2/dropout/div_grad/Sum_1"
   op: "Sum"
-  input: "gradients/local3/local3_grad/ReluGrad"
-  input: "gradients/local3/add_grad/BroadcastGradientArgs:1"
+  input: "gradients/dropout_2/dropout/div_grad/mul"
+  input: "gradients/dropout_2/dropout/div_grad/BroadcastGradientArgs:1"
   attr {
     key: "T"
     value {
@@ -9447,10 +10794,541 @@ node {
   }
 }
 node {
-  name: "gradients/local3/add_grad/Reshape_1"
+  name: "gradients/dropout_2/dropout/div_grad/Reshape_1"
   op: "Reshape"
-  input: "gradients/local3/add_grad/Sum_1"
-  input: "gradients/local3/add_grad/Shape_1"
+  input: "gradients/dropout_2/dropout/div_grad/Sum_1"
+  input: "gradients/dropout_2/dropout/div_grad/Shape_1"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tshape"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout_2/dropout/div_grad/tuple/group_deps"
+  op: "NoOp"
+  input: "^add"
+  input: "^gradients/dropout_2/dropout/div_grad/Reshape"
+  input: "^gradients/dropout_2/dropout/div_grad/Reshape_1"
+}
+node {
+  name: "gradients/dropout_2/dropout/div_grad/tuple/control_dependency"
+  op: "Identity"
+  input: "gradients/dropout_2/dropout/div_grad/Reshape"
+  input: "^gradients/dropout_2/dropout/div_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@gradients/dropout_2/dropout/div_grad/Reshape"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout_2/dropout/div_grad/tuple/control_dependency_1"
+  op: "Identity"
+  input: "gradients/dropout_2/dropout/div_grad/Reshape_1"
+  input: "^gradients/dropout_2/dropout/div_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@gradients/dropout_2/dropout/div_grad/Reshape_1"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dense_2/Relu_grad/ReluGrad"
+  op: "ReluGrad"
+  input: "gradients/dropout_2/dropout/div_grad/tuple/control_dependency"
+  input: "dense_2/Relu"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dense_2/BiasAdd_grad/BiasAddGrad"
+  op: "BiasAddGrad"
+  input: "gradients/dense_2/Relu_grad/ReluGrad"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+}
+node {
+  name: "gradients/dense_2/BiasAdd_grad/tuple/group_deps"
+  op: "NoOp"
+  input: "^add"
+  input: "^gradients/dense_2/Relu_grad/ReluGrad"
+  input: "^gradients/dense_2/BiasAdd_grad/BiasAddGrad"
+}
+node {
+  name: "gradients/dense_2/BiasAdd_grad/tuple/control_dependency"
+  op: "Identity"
+  input: "gradients/dense_2/Relu_grad/ReluGrad"
+  input: "^gradients/dense_2/BiasAdd_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@gradients/dense_2/Relu_grad/ReluGrad"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dense_2/BiasAdd_grad/tuple/control_dependency_1"
+  op: "Identity"
+  input: "gradients/dense_2/BiasAdd_grad/BiasAddGrad"
+  input: "^gradients/dense_2/BiasAdd_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@gradients/dense_2/BiasAdd_grad/BiasAddGrad"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dense_2/MatMul_grad/MatMul"
+  op: "MatMul"
+  input: "gradients/dense_2/BiasAdd_grad/tuple/control_dependency"
+  input: "dense_1/kernel/read"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "transpose_a"
+    value {
+      b: false
+    }
+  }
+  attr {
+    key: "transpose_b"
+    value {
+      b: true
+    }
+  }
+}
+node {
+  name: "gradients/dense_2/MatMul_grad/MatMul_1"
+  op: "MatMul"
+  input: "dropout/dropout/mul"
+  input: "gradients/dense_2/BiasAdd_grad/tuple/control_dependency"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "transpose_a"
+    value {
+      b: true
+    }
+  }
+  attr {
+    key: "transpose_b"
+    value {
+      b: false
+    }
+  }
+}
+node {
+  name: "gradients/dense_2/MatMul_grad/tuple/group_deps"
+  op: "NoOp"
+  input: "^add"
+  input: "^gradients/dense_2/MatMul_grad/MatMul"
+  input: "^gradients/dense_2/MatMul_grad/MatMul_1"
+}
+node {
+  name: "gradients/dense_2/MatMul_grad/tuple/control_dependency"
+  op: "Identity"
+  input: "gradients/dense_2/MatMul_grad/MatMul"
+  input: "^gradients/dense_2/MatMul_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@gradients/dense_2/MatMul_grad/MatMul"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dense_2/MatMul_grad/tuple/control_dependency_1"
+  op: "Identity"
+  input: "gradients/dense_2/MatMul_grad/MatMul_1"
+  input: "^gradients/dense_2/MatMul_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@gradients/dense_2/MatMul_grad/MatMul_1"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/mul_grad/Shape"
+  op: "Shape"
+  input: "dropout/dropout/div"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 2
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "out_type"
+    value {
+      type: DT_INT32
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/mul_grad/Shape_1"
+  op: "Shape"
+  input: "dropout/dropout/Floor"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 2
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "out_type"
+    value {
+      type: DT_INT32
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/mul_grad/BroadcastGradientArgs"
+  op: "BroadcastGradientArgs"
+  input: "gradients/dropout/dropout/mul_grad/Shape"
+  input: "gradients/dropout/dropout/mul_grad/Shape_1"
+  attr {
+    key: "T"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+        }
+        shape {
+          dim {
+            size: -1
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/mul_grad/mul"
+  op: "Mul"
+  input: "gradients/dense_2/MatMul_grad/tuple/control_dependency"
+  input: "dropout/dropout/Floor"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/mul_grad/Sum"
+  op: "Sum"
+  input: "gradients/dropout/dropout/mul_grad/mul"
+  input: "gradients/dropout/dropout/mul_grad/BroadcastGradientArgs"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tidx"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          unknown_rank: true
+        }
+      }
+    }
+  }
+  attr {
+    key: "keep_dims"
+    value {
+      b: false
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/mul_grad/Reshape"
+  op: "Reshape"
+  input: "gradients/dropout/dropout/mul_grad/Sum"
+  input: "gradients/dropout/dropout/mul_grad/Shape"
   attr {
     key: "T"
     value {
@@ -9469,7 +11347,10 @@ node {
       list {
         shape {
           dim {
-            size: 384
+            size: -1
+          }
+          dim {
+            size: 1024
           }
         }
       }
@@ -9477,84 +11358,10 @@ node {
   }
 }
 node {
-  name: "gradients/local3/add_grad/tuple/group_deps"
-  op: "NoOp"
-  input: "^add"
-  input: "^gradients/local3/add_grad/Reshape"
-  input: "^gradients/local3/add_grad/Reshape_1"
-}
-node {
-  name: "gradients/local3/add_grad/tuple/control_dependency"
-  op: "Identity"
-  input: "gradients/local3/add_grad/Reshape"
-  input: "^gradients/local3/add_grad/tuple/group_deps"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@gradients/local3/add_grad/Reshape"
-      }
-    }
-  }
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 120
-          }
-          dim {
-            size: 384
-          }
-        }
-      }
-    }
-  }
-}
-node {
-  name: "gradients/local3/add_grad/tuple/control_dependency_1"
-  op: "Identity"
-  input: "gradients/local3/add_grad/Reshape_1"
-  input: "^gradients/local3/add_grad/tuple/group_deps"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@gradients/local3/add_grad/Reshape_1"
-      }
-    }
-  }
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 384
-          }
-        }
-      }
-    }
-  }
-}
-node {
-  name: "gradients/local3/MatMul_grad/MatMul"
-  op: "MatMul"
-  input: "gradients/local3/add_grad/tuple/control_dependency"
-  input: "local3/Variable/read"
+  name: "gradients/dropout/dropout/mul_grad/mul_1"
+  op: "Mul"
+  input: "dropout/dropout/div"
+  input: "gradients/dense_2/MatMul_grad/tuple/control_dependency"
   attr {
     key: "T"
     value {
@@ -9567,33 +11374,21 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
-            size: 4096
+            size: 1024
           }
         }
       }
     }
   }
-  attr {
-    key: "transpose_a"
-    value {
-      b: false
-    }
-  }
-  attr {
-    key: "transpose_b"
-    value {
-      b: true
-    }
-  }
 }
 node {
-  name: "gradients/local3/MatMul_grad/MatMul_1"
-  op: "MatMul"
-  input: "local3/Reshape"
-  input: "gradients/local3/add_grad/tuple/control_dependency"
+  name: "gradients/dropout/dropout/mul_grad/Sum_1"
+  op: "Sum"
+  input: "gradients/dropout/dropout/mul_grad/mul_1"
+  input: "gradients/dropout/dropout/mul_grad/BroadcastGradientArgs:1"
   attr {
     key: "T"
     value {
@@ -9601,45 +11396,73 @@ node {
     }
   }
   attr {
+    key: "Tidx"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
     key: "_output_shapes"
     value {
       list {
         shape {
-          dim {
-            size: 4096
-          }
-          dim {
-            size: 384
-          }
+          unknown_rank: true
         }
       }
     }
   }
   attr {
-    key: "transpose_a"
-    value {
-      b: true
-    }
-  }
-  attr {
-    key: "transpose_b"
+    key: "keep_dims"
     value {
       b: false
     }
   }
 }
 node {
-  name: "gradients/local3/MatMul_grad/tuple/group_deps"
+  name: "gradients/dropout/dropout/mul_grad/Reshape_1"
+  op: "Reshape"
+  input: "gradients/dropout/dropout/mul_grad/Sum_1"
+  input: "gradients/dropout/dropout/mul_grad/Shape_1"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tshape"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/mul_grad/tuple/group_deps"
   op: "NoOp"
   input: "^add"
-  input: "^gradients/local3/MatMul_grad/MatMul"
-  input: "^gradients/local3/MatMul_grad/MatMul_1"
+  input: "^gradients/dropout/dropout/mul_grad/Reshape"
+  input: "^gradients/dropout/dropout/mul_grad/Reshape_1"
 }
 node {
-  name: "gradients/local3/MatMul_grad/tuple/control_dependency"
+  name: "gradients/dropout/dropout/mul_grad/tuple/control_dependency"
   op: "Identity"
-  input: "gradients/local3/MatMul_grad/MatMul"
-  input: "^gradients/local3/MatMul_grad/tuple/group_deps"
+  input: "gradients/dropout/dropout/mul_grad/Reshape"
+  input: "^gradients/dropout/dropout/mul_grad/tuple/group_deps"
   attr {
     key: "T"
     value {
@@ -9650,7 +11473,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@gradients/local3/MatMul_grad/MatMul"
+        s: "loc:@gradients/dropout/dropout/mul_grad/Reshape"
       }
     }
   }
@@ -9660,10 +11483,10 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
-            size: 4096
+            size: 1024
           }
         }
       }
@@ -9671,10 +11494,10 @@ node {
   }
 }
 node {
-  name: "gradients/local3/MatMul_grad/tuple/control_dependency_1"
+  name: "gradients/dropout/dropout/mul_grad/tuple/control_dependency_1"
   op: "Identity"
-  input: "gradients/local3/MatMul_grad/MatMul_1"
-  input: "^gradients/local3/MatMul_grad/tuple/group_deps"
+  input: "gradients/dropout/dropout/mul_grad/Reshape_1"
+  input: "^gradients/dropout/dropout/mul_grad/tuple/group_deps"
   attr {
     key: "T"
     value {
@@ -9685,7 +11508,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@gradients/local3/MatMul_grad/MatMul_1"
+        s: "loc:@gradients/dropout/dropout/mul_grad/Reshape_1"
       }
     }
   }
@@ -9695,10 +11518,10 @@ node {
       list {
         shape {
           dim {
-            size: 4096
+            size: -1
           }
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -9706,9 +11529,725 @@ node {
   }
 }
 node {
-  name: "gradients/local3/Reshape_grad/Shape"
+  name: "gradients/dropout/dropout/div_grad/Shape"
+  op: "Shape"
+  input: "dense/Relu"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 2
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "out_type"
+    value {
+      type: DT_INT32
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/div_grad/Shape_1"
   op: "Const"
   input: "^add"
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+          dim {
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/div_grad/BroadcastGradientArgs"
+  op: "BroadcastGradientArgs"
+  input: "gradients/dropout/dropout/div_grad/Shape"
+  input: "gradients/dropout/dropout/div_grad/Shape_1"
+  attr {
+    key: "T"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+        }
+        shape {
+          dim {
+            size: -1
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/div_grad/RealDiv"
+  op: "RealDiv"
+  input: "gradients/dropout/dropout/mul_grad/tuple/control_dependency"
+  input: "dropout/dropout/keep_prob"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/div_grad/Sum"
+  op: "Sum"
+  input: "gradients/dropout/dropout/div_grad/RealDiv"
+  input: "gradients/dropout/dropout/div_grad/BroadcastGradientArgs"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tidx"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          unknown_rank: true
+        }
+      }
+    }
+  }
+  attr {
+    key: "keep_dims"
+    value {
+      b: false
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/div_grad/Reshape"
+  op: "Reshape"
+  input: "gradients/dropout/dropout/div_grad/Sum"
+  input: "gradients/dropout/dropout/div_grad/Shape"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tshape"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/div_grad/Neg"
+  op: "Neg"
+  input: "dense/Relu"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/div_grad/RealDiv_1"
+  op: "RealDiv"
+  input: "gradients/dropout/dropout/div_grad/Neg"
+  input: "dropout/dropout/keep_prob"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/div_grad/RealDiv_2"
+  op: "RealDiv"
+  input: "gradients/dropout/dropout/div_grad/RealDiv_1"
+  input: "dropout/dropout/keep_prob"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/div_grad/mul"
+  op: "Mul"
+  input: "gradients/dropout/dropout/mul_grad/tuple/control_dependency"
+  input: "gradients/dropout/dropout/div_grad/RealDiv_2"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/div_grad/Sum_1"
+  op: "Sum"
+  input: "gradients/dropout/dropout/div_grad/mul"
+  input: "gradients/dropout/dropout/div_grad/BroadcastGradientArgs:1"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tidx"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          unknown_rank: true
+        }
+      }
+    }
+  }
+  attr {
+    key: "keep_dims"
+    value {
+      b: false
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/div_grad/Reshape_1"
+  op: "Reshape"
+  input: "gradients/dropout/dropout/div_grad/Sum_1"
+  input: "gradients/dropout/dropout/div_grad/Shape_1"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tshape"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/div_grad/tuple/group_deps"
+  op: "NoOp"
+  input: "^add"
+  input: "^gradients/dropout/dropout/div_grad/Reshape"
+  input: "^gradients/dropout/dropout/div_grad/Reshape_1"
+}
+node {
+  name: "gradients/dropout/dropout/div_grad/tuple/control_dependency"
+  op: "Identity"
+  input: "gradients/dropout/dropout/div_grad/Reshape"
+  input: "^gradients/dropout/dropout/div_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@gradients/dropout/dropout/div_grad/Reshape"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dropout/dropout/div_grad/tuple/control_dependency_1"
+  op: "Identity"
+  input: "gradients/dropout/dropout/div_grad/Reshape_1"
+  input: "^gradients/dropout/dropout/div_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@gradients/dropout/dropout/div_grad/Reshape_1"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dense/Relu_grad/ReluGrad"
+  op: "ReluGrad"
+  input: "gradients/dropout/dropout/div_grad/tuple/control_dependency"
+  input: "dense/Relu"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dense/BiasAdd_grad/BiasAddGrad"
+  op: "BiasAddGrad"
+  input: "gradients/dense/Relu_grad/ReluGrad"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+}
+node {
+  name: "gradients/dense/BiasAdd_grad/tuple/group_deps"
+  op: "NoOp"
+  input: "^add"
+  input: "^gradients/dense/Relu_grad/ReluGrad"
+  input: "^gradients/dense/BiasAdd_grad/BiasAddGrad"
+}
+node {
+  name: "gradients/dense/BiasAdd_grad/tuple/control_dependency"
+  op: "Identity"
+  input: "gradients/dense/Relu_grad/ReluGrad"
+  input: "^gradients/dense/BiasAdd_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@gradients/dense/Relu_grad/ReluGrad"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dense/BiasAdd_grad/tuple/control_dependency_1"
+  op: "Identity"
+  input: "gradients/dense/BiasAdd_grad/BiasAddGrad"
+  input: "^gradients/dense/BiasAdd_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@gradients/dense/BiasAdd_grad/BiasAddGrad"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dense/MatMul_grad/MatMul"
+  op: "MatMul"
+  input: "gradients/dense/BiasAdd_grad/tuple/control_dependency"
+  input: "dense/kernel/read"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 4096
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "transpose_a"
+    value {
+      b: false
+    }
+  }
+  attr {
+    key: "transpose_b"
+    value {
+      b: true
+    }
+  }
+}
+node {
+  name: "gradients/dense/MatMul_grad/MatMul_1"
+  op: "MatMul"
+  input: "Reshape_1"
+  input: "gradients/dense/BiasAdd_grad/tuple/control_dependency"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 4096
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "transpose_a"
+    value {
+      b: true
+    }
+  }
+  attr {
+    key: "transpose_b"
+    value {
+      b: false
+    }
+  }
+}
+node {
+  name: "gradients/dense/MatMul_grad/tuple/group_deps"
+  op: "NoOp"
+  input: "^add"
+  input: "^gradients/dense/MatMul_grad/MatMul"
+  input: "^gradients/dense/MatMul_grad/MatMul_1"
+}
+node {
+  name: "gradients/dense/MatMul_grad/tuple/control_dependency"
+  op: "Identity"
+  input: "gradients/dense/MatMul_grad/MatMul"
+  input: "^gradients/dense/MatMul_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@gradients/dense/MatMul_grad/MatMul"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: -1
+          }
+          dim {
+            size: 4096
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/dense/MatMul_grad/tuple/control_dependency_1"
+  op: "Identity"
+  input: "gradients/dense/MatMul_grad/MatMul_1"
+  input: "^gradients/dense/MatMul_grad/tuple/group_deps"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@gradients/dense/MatMul_grad/MatMul_1"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 4096
+          }
+          dim {
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+}
+node {
+  name: "gradients/Reshape_1_grad/Shape"
+  op: "Shape"
+  input: "pool2"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
   attr {
     key: "_output_shapes"
     value {
@@ -9722,31 +12261,17 @@ node {
     }
   }
   attr {
-    key: "dtype"
+    key: "out_type"
     value {
       type: DT_INT32
     }
   }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 4
-          }
-        }
-        tensor_content: "x\000\000\000\010\000\000\000\010\000\000\000@\000\000\000"
-      }
-    }
-  }
 }
 node {
-  name: "gradients/local3/Reshape_grad/Reshape"
+  name: "gradients/Reshape_1_grad/Reshape"
   op: "Reshape"
-  input: "gradients/local3/MatMul_grad/tuple/control_dependency"
-  input: "gradients/local3/Reshape_grad/Shape"
+  input: "gradients/dense/MatMul_grad/tuple/control_dependency"
+  input: "gradients/Reshape_1_grad/Shape"
   attr {
     key: "T"
     value {
@@ -9765,7 +12290,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 8
@@ -9786,7 +12311,7 @@ node {
   op: "MaxPoolGrad"
   input: "norm2"
   input: "pool2"
-  input: "gradients/local3/Reshape_grad/Reshape"
+  input: "gradients/Reshape_1_grad/Reshape"
   attr {
     key: "T"
     value {
@@ -9799,7 +12324,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 16
@@ -9867,7 +12392,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 16
@@ -9924,7 +12449,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 16
@@ -10001,7 +12526,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 16
@@ -10248,7 +12773,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 16
@@ -10323,7 +12848,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 16
@@ -10381,7 +12906,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 32
@@ -10448,7 +12973,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 32
@@ -10525,7 +13050,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 32
@@ -10772,7 +13297,7 @@ node {
       list {
         shape {
           dim {
-            size: 120
+            size: -1
           }
           dim {
             size: 32
@@ -11035,11 +13560,11 @@ node {
   }
 }
 node {
-  name: "GradientDescent/update_local3/Variable/ApplyGradientDescent"
+  name: "GradientDescent/update_dense/kernel/ApplyGradientDescent"
   op: "ApplyGradientDescent"
-  input: "local3/Variable"
+  input: "dense/kernel"
   input: "GradientDescent/learning_rate"
-  input: "gradients/local3/MatMul_grad/tuple/control_dependency_1"
+  input: "gradients/dense/MatMul_grad/tuple/control_dependency_1"
   attr {
     key: "T"
     value {
@@ -11050,7 +13575,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@local3/Variable"
+        s: "loc:@dense/kernel"
       }
     }
   }
@@ -11063,7 +13588,7 @@ node {
             size: 4096
           }
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -11077,11 +13602,11 @@ node {
   }
 }
 node {
-  name: "GradientDescent/update_local3/Variable_1/ApplyGradientDescent"
+  name: "GradientDescent/update_dense/bias/ApplyGradientDescent"
   op: "ApplyGradientDescent"
-  input: "local3/Variable_1"
+  input: "dense/bias"
   input: "GradientDescent/learning_rate"
-  input: "gradients/local3/add_grad/tuple/control_dependency_1"
+  input: "gradients/dense/BiasAdd_grad/tuple/control_dependency_1"
   attr {
     key: "T"
     value {
@@ -11092,7 +13617,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@local3/Variable_1"
+        s: "loc:@dense/bias"
       }
     }
   }
@@ -11102,7 +13627,7 @@ node {
       list {
         shape {
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -11116,11 +13641,11 @@ node {
   }
 }
 node {
-  name: "GradientDescent/update_local4/Variable/ApplyGradientDescent"
+  name: "GradientDescent/update_dense_1/kernel/ApplyGradientDescent"
   op: "ApplyGradientDescent"
-  input: "local4/Variable"
+  input: "dense_1/kernel"
   input: "GradientDescent/learning_rate"
-  input: "gradients/local4/MatMul_grad/tuple/control_dependency_1"
+  input: "gradients/dense_2/MatMul_grad/tuple/control_dependency_1"
   attr {
     key: "T"
     value {
@@ -11131,7 +13656,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@local4/Variable"
+        s: "loc:@dense_1/kernel"
       }
     }
   }
@@ -11141,49 +13666,10 @@ node {
       list {
         shape {
           dim {
-            size: 384
+            size: 1024
           }
           dim {
-            size: 192
-          }
-        }
-      }
-    }
-  }
-  attr {
-    key: "use_locking"
-    value {
-      b: false
-    }
-  }
-}
-node {
-  name: "GradientDescent/update_local4/Variable_1/ApplyGradientDescent"
-  op: "ApplyGradientDescent"
-  input: "local4/Variable_1"
-  input: "GradientDescent/learning_rate"
-  input: "gradients/local4/add_grad/tuple/control_dependency_1"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@local4/Variable_1"
-      }
-    }
-  }
-  attr {
-    key: "_output_shapes"
-    value {
-      list {
-        shape {
-          dim {
-            size: 192
+            size: 1024
           }
         }
       }
@@ -11197,11 +13683,11 @@ node {
   }
 }
 node {
-  name: "GradientDescent/update_softmax_linear/Variable/ApplyGradientDescent"
+  name: "GradientDescent/update_dense_1/bias/ApplyGradientDescent"
   op: "ApplyGradientDescent"
-  input: "softmax_linear/Variable"
+  input: "dense_1/bias"
   input: "GradientDescent/learning_rate"
-  input: "gradients/softmax_linear/MatMul_grad/tuple/control_dependency_1"
+  input: "gradients/dense_2/BiasAdd_grad/tuple/control_dependency_1"
   attr {
     key: "T"
     value {
@@ -11212,7 +13698,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@softmax_linear/Variable"
+        s: "loc:@dense_1/bias"
       }
     }
   }
@@ -11222,7 +13708,46 @@ node {
       list {
         shape {
           dim {
-            size: 192
+            size: 1024
+          }
+        }
+      }
+    }
+  }
+  attr {
+    key: "use_locking"
+    value {
+      b: false
+    }
+  }
+}
+node {
+  name: "GradientDescent/update_dense_2/kernel/ApplyGradientDescent"
+  op: "ApplyGradientDescent"
+  input: "dense_2/kernel"
+  input: "GradientDescent/learning_rate"
+  input: "gradients/dense_3/MatMul_grad/tuple/control_dependency_1"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "_class"
+    value {
+      list {
+        s: "loc:@dense_2/kernel"
+      }
+    }
+  }
+  attr {
+    key: "_output_shapes"
+    value {
+      list {
+        shape {
+          dim {
+            size: 1024
           }
           dim {
             size: 10
@@ -11239,11 +13764,11 @@ node {
   }
 }
 node {
-  name: "GradientDescent/update_softmax_linear/Variable_1/ApplyGradientDescent"
+  name: "GradientDescent/update_dense_2/bias/ApplyGradientDescent"
   op: "ApplyGradientDescent"
-  input: "softmax_linear/Variable_1"
+  input: "dense_2/bias"
   input: "GradientDescent/learning_rate"
-  input: "gradients/softmax_linear/softmax_linear_grad/tuple/control_dependency_1"
+  input: "gradients/dense_3/BiasAdd_grad/tuple/control_dependency_1"
   attr {
     key: "T"
     value {
@@ -11254,7 +13779,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@softmax_linear/Variable_1"
+        s: "loc:@dense_2/bias"
       }
     }
   }
@@ -11285,12 +13810,12 @@ node {
   input: "^GradientDescent/update_conv1/Variable_1/ApplyGradientDescent"
   input: "^GradientDescent/update_conv2/Variable/ApplyGradientDescent"
   input: "^GradientDescent/update_conv2/Variable_1/ApplyGradientDescent"
-  input: "^GradientDescent/update_local3/Variable/ApplyGradientDescent"
-  input: "^GradientDescent/update_local3/Variable_1/ApplyGradientDescent"
-  input: "^GradientDescent/update_local4/Variable/ApplyGradientDescent"
-  input: "^GradientDescent/update_local4/Variable_1/ApplyGradientDescent"
-  input: "^GradientDescent/update_softmax_linear/Variable/ApplyGradientDescent"
-  input: "^GradientDescent/update_softmax_linear/Variable_1/ApplyGradientDescent"
+  input: "^GradientDescent/update_dense/kernel/ApplyGradientDescent"
+  input: "^GradientDescent/update_dense/bias/ApplyGradientDescent"
+  input: "^GradientDescent/update_dense_1/kernel/ApplyGradientDescent"
+  input: "^GradientDescent/update_dense_1/bias/ApplyGradientDescent"
+  input: "^GradientDescent/update_dense_2/kernel/ApplyGradientDescent"
+  input: "^GradientDescent/update_dense_2/bias/ApplyGradientDescent"
 }
 node {
   name: "GradientDescent/value"
@@ -11426,12 +13951,12 @@ node {
   input: "^conv1/Variable_1/Assign"
   input: "^conv2/Variable/Assign"
   input: "^conv2/Variable_1/Assign"
-  input: "^local3/Variable/Assign"
-  input: "^local3/Variable_1/Assign"
-  input: "^local4/Variable/Assign"
-  input: "^local4/Variable_1/Assign"
-  input: "^softmax_linear/Variable/Assign"
-  input: "^softmax_linear/Variable_1/Assign"
+  input: "^dense/kernel/Assign"
+  input: "^dense/bias/Assign"
+  input: "^dense_1/kernel/Assign"
+  input: "^dense_1/bias/Assign"
+  input: "^dense_2/kernel/Assign"
+  input: "^dense_2/bias/Assign"
 }
 node {
   name: "init_1"
@@ -11586,12 +14111,12 @@ node {
 node {
   name: "report_uninitialized_variables/IsVariableInitialized_5"
   op: "IsVariableInitialized"
-  input: "local3/Variable"
+  input: "dense/kernel"
   attr {
     key: "_class"
     value {
       list {
-        s: "loc:@local3/Variable"
+        s: "loc:@dense/kernel"
       }
     }
   }
@@ -11614,12 +14139,12 @@ node {
 node {
   name: "report_uninitialized_variables/IsVariableInitialized_6"
   op: "IsVariableInitialized"
-  input: "local3/Variable_1"
+  input: "dense/bias"
   attr {
     key: "_class"
     value {
       list {
-        s: "loc:@local3/Variable_1"
+        s: "loc:@dense/bias"
       }
     }
   }
@@ -11642,12 +14167,12 @@ node {
 node {
   name: "report_uninitialized_variables/IsVariableInitialized_7"
   op: "IsVariableInitialized"
-  input: "local4/Variable"
+  input: "dense_1/kernel"
   attr {
     key: "_class"
     value {
       list {
-        s: "loc:@local4/Variable"
+        s: "loc:@dense_1/kernel"
       }
     }
   }
@@ -11670,12 +14195,12 @@ node {
 node {
   name: "report_uninitialized_variables/IsVariableInitialized_8"
   op: "IsVariableInitialized"
-  input: "local4/Variable_1"
+  input: "dense_1/bias"
   attr {
     key: "_class"
     value {
       list {
-        s: "loc:@local4/Variable_1"
+        s: "loc:@dense_1/bias"
       }
     }
   }
@@ -11698,12 +14223,12 @@ node {
 node {
   name: "report_uninitialized_variables/IsVariableInitialized_9"
   op: "IsVariableInitialized"
-  input: "softmax_linear/Variable"
+  input: "dense_2/kernel"
   attr {
     key: "_class"
     value {
       list {
-        s: "loc:@softmax_linear/Variable"
+        s: "loc:@dense_2/kernel"
       }
     }
   }
@@ -11726,12 +14251,12 @@ node {
 node {
   name: "report_uninitialized_variables/IsVariableInitialized_10"
   op: "IsVariableInitialized"
-  input: "softmax_linear/Variable_1"
+  input: "dense_2/bias"
   attr {
     key: "_class"
     value {
       list {
-        s: "loc:@softmax_linear/Variable_1"
+        s: "loc:@dense_2/bias"
       }
     }
   }
@@ -11852,12 +14377,12 @@ node {
         string_val: "conv1/Variable_1"
         string_val: "conv2/Variable"
         string_val: "conv2/Variable_1"
-        string_val: "local3/Variable"
-        string_val: "local3/Variable_1"
-        string_val: "local4/Variable"
-        string_val: "local4/Variable_1"
-        string_val: "softmax_linear/Variable"
-        string_val: "softmax_linear/Variable_1"
+        string_val: "dense/kernel"
+        string_val: "dense/bias"
+        string_val: "dense_1/kernel"
+        string_val: "dense_1/bias"
+        string_val: "dense_2/kernel"
+        string_val: "dense_2/bias"
       }
     }
   }
@@ -12892,12 +15417,12 @@ node {
 node {
   name: "report_uninitialized_variables_1/IsVariableInitialized_5"
   op: "IsVariableInitialized"
-  input: "local3/Variable"
+  input: "dense/kernel"
   attr {
     key: "_class"
     value {
       list {
-        s: "loc:@local3/Variable"
+        s: "loc:@dense/kernel"
       }
     }
   }
@@ -12920,12 +15445,12 @@ node {
 node {
   name: "report_uninitialized_variables_1/IsVariableInitialized_6"
   op: "IsVariableInitialized"
-  input: "local3/Variable_1"
+  input: "dense/bias"
   attr {
     key: "_class"
     value {
       list {
-        s: "loc:@local3/Variable_1"
+        s: "loc:@dense/bias"
       }
     }
   }
@@ -12948,12 +15473,12 @@ node {
 node {
   name: "report_uninitialized_variables_1/IsVariableInitialized_7"
   op: "IsVariableInitialized"
-  input: "local4/Variable"
+  input: "dense_1/kernel"
   attr {
     key: "_class"
     value {
       list {
-        s: "loc:@local4/Variable"
+        s: "loc:@dense_1/kernel"
       }
     }
   }
@@ -12976,12 +15501,12 @@ node {
 node {
   name: "report_uninitialized_variables_1/IsVariableInitialized_8"
   op: "IsVariableInitialized"
-  input: "local4/Variable_1"
+  input: "dense_1/bias"
   attr {
     key: "_class"
     value {
       list {
-        s: "loc:@local4/Variable_1"
+        s: "loc:@dense_1/bias"
       }
     }
   }
@@ -13004,12 +15529,12 @@ node {
 node {
   name: "report_uninitialized_variables_1/IsVariableInitialized_9"
   op: "IsVariableInitialized"
-  input: "softmax_linear/Variable"
+  input: "dense_2/kernel"
   attr {
     key: "_class"
     value {
       list {
-        s: "loc:@softmax_linear/Variable"
+        s: "loc:@dense_2/kernel"
       }
     }
   }
@@ -13032,12 +15557,12 @@ node {
 node {
   name: "report_uninitialized_variables_1/IsVariableInitialized_10"
   op: "IsVariableInitialized"
-  input: "softmax_linear/Variable_1"
+  input: "dense_2/bias"
   attr {
     key: "_class"
     value {
       list {
-        s: "loc:@softmax_linear/Variable_1"
+        s: "loc:@dense_2/bias"
       }
     }
   }
@@ -13158,12 +15683,12 @@ node {
         string_val: "conv1/Variable_1"
         string_val: "conv2/Variable"
         string_val: "conv2/Variable_1"
-        string_val: "local3/Variable"
-        string_val: "local3/Variable_1"
-        string_val: "local4/Variable"
-        string_val: "local4/Variable_1"
-        string_val: "softmax_linear/Variable"
-        string_val: "softmax_linear/Variable_1"
+        string_val: "dense/kernel"
+        string_val: "dense/bias"
+        string_val: "dense_1/kernel"
+        string_val: "dense_1/bias"
+        string_val: "dense_2/kernel"
+        string_val: "dense_2/bias"
       }
     }
   }
@@ -14044,7 +16569,7 @@ node {
         dtype: DT_STRING
         tensor_shape {
         }
-        string_val: "_temp_9b72cb56d1a74f52967aacfdd95d7ed1/part"
+        string_val: "_temp_edf95332c3f041f9896e33e7803d2805/part"
       }
     }
   }
@@ -14187,13 +16712,13 @@ node {
         string_val: "conv1/Variable_1"
         string_val: "conv2/Variable"
         string_val: "conv2/Variable_1"
+        string_val: "dense/bias"
+        string_val: "dense/kernel"
+        string_val: "dense_1/bias"
+        string_val: "dense_1/kernel"
+        string_val: "dense_2/bias"
+        string_val: "dense_2/kernel"
         string_val: "global_step"
-        string_val: "local3/Variable"
-        string_val: "local3/Variable_1"
-        string_val: "local4/Variable"
-        string_val: "local4/Variable_1"
-        string_val: "softmax_linear/Variable"
-        string_val: "softmax_linear/Variable_1"
       }
     }
   }
@@ -14254,13 +16779,13 @@ node {
   input: "conv1/Variable_1"
   input: "conv2/Variable"
   input: "conv2/Variable_1"
+  input: "dense/bias"
+  input: "dense/kernel"
+  input: "dense_1/bias"
+  input: "dense_1/kernel"
+  input: "dense_2/bias"
+  input: "dense_2/kernel"
   input: "global_step"
-  input: "local3/Variable"
-  input: "local3/Variable_1"
-  input: "local4/Variable"
-  input: "local4/Variable_1"
-  input: "softmax_linear/Variable"
-  input: "softmax_linear/Variable_1"
   attr {
     key: "dtypes"
     value {
@@ -14269,13 +16794,13 @@ node {
         type: DT_FLOAT
         type: DT_FLOAT
         type: DT_FLOAT
+        type: DT_FLOAT
+        type: DT_FLOAT
+        type: DT_FLOAT
+        type: DT_FLOAT
+        type: DT_FLOAT
+        type: DT_FLOAT
         type: DT_INT64
-        type: DT_FLOAT
-        type: DT_FLOAT
-        type: DT_FLOAT
-        type: DT_FLOAT
-        type: DT_FLOAT
-        type: DT_FLOAT
       }
     }
   }
@@ -14992,7 +17517,7 @@ node {
             size: 1
           }
         }
-        string_val: "global_step"
+        string_val: "dense/bias"
       }
     }
   }
@@ -15053,7 +17578,7 @@ node {
     key: "dtypes"
     value {
       list {
-        type: DT_INT64
+        type: DT_FLOAT
       }
     }
   }
@@ -15061,19 +17586,19 @@ node {
 node {
   name: "save/Assign_4"
   op: "Assign"
-  input: "global_step"
+  input: "dense/bias"
   input: "save/RestoreV2_4"
   attr {
     key: "T"
     value {
-      type: DT_INT64
+      type: DT_FLOAT
     }
   }
   attr {
     key: "_class"
     value {
       list {
-        s: "loc:@global_step"
+        s: "loc:@dense/bias"
       }
     }
   }
@@ -15082,6 +17607,9 @@ node {
     value {
       list {
         shape {
+          dim {
+            size: 1024
+          }
         }
       }
     }
@@ -15130,7 +17658,7 @@ node {
             size: 1
           }
         }
-        string_val: "local3/Variable"
+        string_val: "dense/kernel"
       }
     }
   }
@@ -15199,7 +17727,7 @@ node {
 node {
   name: "save/Assign_5"
   op: "Assign"
-  input: "local3/Variable"
+  input: "dense/kernel"
   input: "save/RestoreV2_5"
   attr {
     key: "T"
@@ -15211,7 +17739,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@local3/Variable"
+        s: "loc:@dense/kernel"
       }
     }
   }
@@ -15224,7 +17752,7 @@ node {
             size: 4096
           }
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -15274,7 +17802,7 @@ node {
             size: 1
           }
         }
-        string_val: "local3/Variable_1"
+        string_val: "dense_1/bias"
       }
     }
   }
@@ -15343,7 +17871,7 @@ node {
 node {
   name: "save/Assign_6"
   op: "Assign"
-  input: "local3/Variable_1"
+  input: "dense_1/bias"
   input: "save/RestoreV2_6"
   attr {
     key: "T"
@@ -15355,7 +17883,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@local3/Variable_1"
+        s: "loc:@dense_1/bias"
       }
     }
   }
@@ -15365,7 +17893,7 @@ node {
       list {
         shape {
           dim {
-            size: 384
+            size: 1024
           }
         }
       }
@@ -15415,7 +17943,7 @@ node {
             size: 1
           }
         }
-        string_val: "local4/Variable"
+        string_val: "dense_1/kernel"
       }
     }
   }
@@ -15484,7 +18012,7 @@ node {
 node {
   name: "save/Assign_7"
   op: "Assign"
-  input: "local4/Variable"
+  input: "dense_1/kernel"
   input: "save/RestoreV2_7"
   attr {
     key: "T"
@@ -15496,7 +18024,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@local4/Variable"
+        s: "loc:@dense_1/kernel"
       }
     }
   }
@@ -15506,10 +18034,10 @@ node {
       list {
         shape {
           dim {
-            size: 384
+            size: 1024
           }
           dim {
-            size: 192
+            size: 1024
           }
         }
       }
@@ -15559,7 +18087,7 @@ node {
             size: 1
           }
         }
-        string_val: "local4/Variable_1"
+        string_val: "dense_2/bias"
       }
     }
   }
@@ -15628,7 +18156,7 @@ node {
 node {
   name: "save/Assign_8"
   op: "Assign"
-  input: "local4/Variable_1"
+  input: "dense_2/bias"
   input: "save/RestoreV2_8"
   attr {
     key: "T"
@@ -15640,7 +18168,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@local4/Variable_1"
+        s: "loc:@dense_2/bias"
       }
     }
   }
@@ -15650,7 +18178,7 @@ node {
       list {
         shape {
           dim {
-            size: 192
+            size: 10
           }
         }
       }
@@ -15700,7 +18228,7 @@ node {
             size: 1
           }
         }
-        string_val: "softmax_linear/Variable"
+        string_val: "dense_2/kernel"
       }
     }
   }
@@ -15769,7 +18297,7 @@ node {
 node {
   name: "save/Assign_9"
   op: "Assign"
-  input: "softmax_linear/Variable"
+  input: "dense_2/kernel"
   input: "save/RestoreV2_9"
   attr {
     key: "T"
@@ -15781,7 +18309,7 @@ node {
     key: "_class"
     value {
       list {
-        s: "loc:@softmax_linear/Variable"
+        s: "loc:@dense_2/kernel"
       }
     }
   }
@@ -15791,7 +18319,7 @@ node {
       list {
         shape {
           dim {
-            size: 192
+            size: 1024
           }
           dim {
             size: 10
@@ -15844,7 +18372,7 @@ node {
             size: 1
           }
         }
-        string_val: "softmax_linear/Variable_1"
+        string_val: "global_step"
       }
     }
   }
@@ -15905,7 +18433,7 @@ node {
     key: "dtypes"
     value {
       list {
-        type: DT_FLOAT
+        type: DT_INT64
       }
     }
   }
@@ -15913,19 +18441,19 @@ node {
 node {
   name: "save/Assign_10"
   op: "Assign"
-  input: "softmax_linear/Variable_1"
+  input: "global_step"
   input: "save/RestoreV2_10"
   attr {
     key: "T"
     value {
-      type: DT_FLOAT
+      type: DT_INT64
     }
   }
   attr {
     key: "_class"
     value {
       list {
-        s: "loc:@softmax_linear/Variable_1"
+        s: "loc:@global_step"
       }
     }
   }
@@ -15934,9 +18462,6 @@ node {
     value {
       list {
         shape {
-          dim {
-            size: 10
-          }
         }
       }
     }
