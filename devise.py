@@ -126,52 +126,6 @@ def devise_model(features, labels, mode):
     
     return visual_embeddings
 
-def max_margin_loss(visual_embeddings, y):
-    global classes_text_embedding, MARGIN, BATCH_SIZE
-    
-#     loss = 0.0
-#     for i in range(BATCH_SIZE):
-#         for j in range(len(classes_text_embedding)):
-#             loss += tf.maximum(0.0, (MARGIN - tf.tensordot(y[i], visual_embeddings[i], axes=1) 
-#                             + tf.tensordot(classes_text_embedding[j], visual_embeddings[i], axes=1)))
-#         loss -= MARGIN
-#     loss /= BATCH_SIZE
-    with tf.name_scope('loss'):
-        loss = tf.constant(0.0)
-
-        predic_true_distance = tf.reduce_sum(tf.multiply(y, visual_embeddings), axis=1, keep_dims=True)
-        print("predic_true_distance:", predic_true_distance)
-        for j in range(len(classes_text_embedding)):
-            loss = tf.add(loss, tf.maximum(0.0, (MARGIN - predic_true_distance 
-                                    + tf.reduce_sum(tf.multiply(classes_text_embedding[j], visual_embeddings),axis=1, keep_dims=True))))
-        loss = tf.subtract(loss, MARGIN)
-        loss = tf.reduce_sum(loss)
-        loss = tf.div(loss, BATCH_SIZE)
-
-#     num_classes = len(CLASSES)
-#     loss = 0.0
-#     t_labelMv = (-num_classes) * tf.reduce_sum(tf.multiply(y, visual_embeddings))
-#     for i, class_text_embedding in enumerate (classes_text_embedding):
-#         t_jMv = tf.reduce_sum(tf.multiply(class_text_embedding, visual_embeddings))
-#         loss += t_jMv
-#     loss += t_labelMv
-#     loss = tf.maximum(0.0, MARGIN*(num_classes-1) + loss) / BATCH_SIZE
-#     print("calculate loss...")
-#     print('visual embedding: ', visual_embeddings)
-#     num_classes = len(CLASSES)
-#     # t_labelMv
-#     loss = (-num_classes) * tf.multiply(y, visual_embeddings)
-#     # t_jMv
-#     for i, class_text_embedding in enumerate (classes_text_embedding):
-#         loss += tf.multiply(class_text_embedding, visual_embeddings)
-
-#     print('tf.reduce_sum(loss, axis=1, keep_dims=True):', tf.reduce_sum(loss, axis=1, keep_dims=True))
-#     loss = tf.reduce_sum(tf.maximum(0.0, (MARGIN*(num_classes-1) + tf.reduce_sum(loss, axis=1, keep_dims=True)))) / BATCH_SIZE
-#     print('visual embedding: ', visual_embeddings)
-    
-    return loss
-
-
 def train(X_train, y_train, X_validate, y_validate, optimizer, epoch_bound, stop_threshold, batch_size, testing=False):
 
     global saver
@@ -197,16 +151,12 @@ def train(X_train, y_train, X_validate, y_validate, optimizer, epoch_bound, stop
                 sess.run(optimizer, feed_dict={x: X_train[batch*batch_size : (batch+1)*batch_size], 
                                                y: y_train[batch*batch_size : (batch+1)*batch_size], 
                                                mode:'TRAIN'})
-        # print('Validating...')
        
         # split validation set into multiple mini-batches and start validating
         cur_loss = 0.0
         total_batches = int(X_validate.shape[0] / batch_size)
         for batch in range(total_batches):
-            # cur_loss = tf.add(cur_loss, loss)
-            # tf.summary.scalar('loss', cur_loss)
             
-            #print('Merged: ', merged)
             if batch == total_batches - 1:
                 cur_loss += sess.run(loss, feed_dict={x:X_validate[batch*batch_size:],
                                                      y:y_validate[batch*batch_size:],
@@ -302,15 +252,7 @@ CLASSES = fine_class
 
 train_labels_embeddings = labels_2_embeddings(train_labels)
 eval_labels_embeddings = labels_2_embeddings(eval_labels)
-print("train_labels_embeddings shape:", train_labels_embeddings.shape, "type:", train_labels_embeddings.dtype)
-print("eval_labels_embeddings shape:", eval_labels_embeddings.shape, "type:", eval_labels_embeddings.dtype)
-
-
-classes_text_embedding = text_embedding_model.get_classes_text_embedding(all_text_embedding, TEXT_EMBEDDING_SIZE, CLASSES)
-print('classes_text_embedding shape:', classes_text_embedding.shape)
-print('classes_text_embedding len:', len(classes_text_embedding))
-#nearest_neighbors = text_embedding_model.nearest_neighbor_embeddings(classes_text_embedding[2], all_text_embedding, 10)
-#print("Nearest neighbors", nearest_neighbors[0][0])
+classes_text_embedding = labels_2_embeddings(CLASSES)
 
 print('Train Data shape: ',train_data.shape)
 print('Train Label shape: ', train_labels.shape)
@@ -324,37 +266,29 @@ y = tf.placeholder(tf.float32, [None, train_labels_embeddings.shape[1]], name='y
 mode = tf.placeholder(tf.string, name='mode')
 
 visual_embeddings = devise_model(x, y, mode)
-print('visual_embeddings:', visual_embeddings)
-print('y', y)
+
 # Calculate Loss (for both TRAIN and EVAL modes)
-#onehot_labels = tf.one_hot(indices=tf.cast(y, tf.int32), depth=100)
-#loss = tf.losses.softmax_cross_entropy(onehot_labels=onehot_labels, logits=logits)
-# visual_embeddings = np.ones((BATCH_SIZE, 300), dtype=np.float32)
-loss = max_margin_loss(visual_embeddings, y)
+with tf.name_scope('loss'):
+        loss = tf.constant(0.0)
+
+        predic_true_distance = tf.reduce_sum(tf.multiply(y, visual_embeddings), axis=1, keep_dims=True)
+        for j in range(len(classes_text_embedding)):
+            loss = tf.add(loss, tf.maximum(0.0, (MARGIN - predic_true_distance 
+                                    + tf.reduce_sum(tf.multiply(classes_text_embedding[j], visual_embeddings),axis=1, keep_dims=True))))
+        loss = tf.subtract(loss, MARGIN)
+        loss = tf.reduce_sum(loss)
+        loss = tf.div(loss, BATCH_SIZE)
+
 
 print("loss defined")
 # Training iteration (for TRAIN)
-optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.001)
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01)
 train_op = optimizer.minimize(
             loss=loss,
             global_step=tf.train.get_global_step())
 
-# # For prediction (for EVAL)
-# nearest_neighbor_labels = tf.convert_to_tensor([], tf.string)
-# for batch in range(int(train_data.shape[0]/BATCH_SIZE)):
-#     labels = tf.py_func(func=text_embedding_model.get_nearest_neighbor_labels,
-#                         inp=[visual_embeddings[batch*BATCH_SIZE:(batch+1)*BATCH_SIZE], W2V_texts],
-#                         Tout=[tf.string]) # get 5 nearest neighbors of text_embedding for each visual_embedding
-#     labels = tf.convert_to_tensor(labels, tf.string)
-#     tf.concat([nearest_neighbor_labels, labels], axis=0)
 
-# predictions = {
-#     # Generate predictions (for PREDICT and EVAL mode)
-#     "visual_embeddings": visual_embeddings,
-#     "nearest_neighbors": nearest_neighbor_labels,
-# }
-
-#show_graph(tf.get_default_graph().as_graph_def())
+show_graph(tf.get_default_graph().as_graph_def())
 
 ########## devise classifier ##########
 
@@ -369,7 +303,8 @@ writer = tf.summary.FileWriter("logs/", sess.graph)
 
 # randomize dataset
 indices = np.random.permutation(train_data.shape[0])
-
+# init weights
+sess.run(init)
 # start cross validation
 avg_loss = 0.0
 
@@ -404,9 +339,6 @@ if TAKE_CROSS_VALIDATION == True:
 # else:
 #     # init weights
 #     sess.run(init)
-
-# init weights
-sess.run(init)
     
 # randomize dataset
 indices = np.random.permutation(train_data.shape[0])
@@ -433,14 +365,7 @@ sess = tf.Session()
 # restore the precious best model
 saver.restore(sess, STORED_PATH)
 
-# predictions = text_embedding_model.get_nearest_neighbor_labels(visual_embeddings, W2V_texts)
-# #testing_accuracy = 0.0
-# for i in range(5):
-#     results = sess.run(predictions, feed_dict={x:eval_data[i*2000:(i+1)*2000], y:eval_labels_embeddings[i*2000:(i+1)*2000], mode:'EVAL'})
-#     #testing_accuracy += sess.run(tf.reduce_mean(tf.cast(tf.equal(eval_labels[i*2000:(i+1)*2000], results['classes']), tf.float32)))
-#     print('Predic nearest neighbor: ', results['nearest_neighbors'])
 
-#testing_accuracy = 0.0
 for i in range(10):
     predict_embeddings = sess.run(visual_embeddings, feed_dict={x:eval_data[i*200:(i+1)*200], y:eval_labels_embeddings[i*200:(i+1)*200], mode:'EVAL'})
     predict_labels = text_embedding_model.get_nearest_neighbor_labels(predict_embeddings, W2V_texts)
