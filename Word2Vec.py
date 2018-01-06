@@ -59,10 +59,12 @@ class Word2Vec_Model():
         classes_text_embedding = []
         for class_label in classes:
             if "_" in class_label:
+                word_len = 0
                 embedding = [0.0 for x in range(embedding_dim)]
                 for word in class_label.split("_"):
+                    word_len += 1
                     embedding += all_text_embedding[word]
-                classes_text_embedding.append(embedding)
+                classes_text_embedding.append(embedding/word_len)
             else: 
                 classes_text_embedding.append(all_text_embedding[class_label])
         return np.array(classes_text_embedding, dtype=np.float32)

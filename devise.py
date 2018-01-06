@@ -13,9 +13,9 @@ from IPython.display import clear_output, Image, display, HTML
 tf.logging.set_verbosity(tf.logging.INFO)
 
 ########## Hyperparameter ##########
-BATCH_SIZE = 200
+BATCH_SIZE = 20
 EPOCH_BOUND = 1000
-EARLY_STOP_CHECK_EPOCH = 50
+EARLY_STOP_CHECK_EPOCH = 20
 TAKE_CROSS_VALIDATION = False
 CROSS_VALIDATION = 5
 TEXT_EMBEDDING_SIZE = 50
@@ -78,45 +78,49 @@ def devise_model(features, labels, mode):
         conv = tf.nn.conv2d(input_layer, kernel, [1, 1, 1, 1], padding='SAME')
         biases = bias_variable(shape=[64], w=0.0)
         pre_activation = tf.nn.bias_add(conv, biases)
-        conv1 = tf.nn.relu(pre_activation)
+        conv1 = tf.nn.relu(pre_activation, name=scope.name)
        
     # pool1
     pool1 = tf.nn.max_pool(conv1, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME')
     # norm1
-    norm1 = tf.nn.lrn(pool1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75)
+    norm1 = tf.nn.lrn(pool1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm1')
     # conv2
     with tf.variable_scope('conv2') as scope:
         kernel = weight_variable(shape=[5, 5, 64, 64])
         conv = tf.nn.conv2d(norm1, kernel, [1, 1, 1, 1], padding='SAME')
         biases = bias_variable(shape=[64], w=0.1)
         pre_activation = tf.nn.bias_add(conv, biases)
-        conv2 = tf.nn.relu(pre_activation)
+        conv2 = tf.nn.relu(pre_activation, name=scope.name)
     # pool2    
-    pool2 = tf.nn.max_pool(conv2, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME')
+    pool2 = tf.nn.max_pool(conv2, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool2')
     # norm2
-    norm2 = tf.nn.lrn(pool2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75)
+    norm2 = tf.nn.lrn(pool2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm2')
     
     pool2_flat = tf.reshape(norm2, [-1, 8*8*64])
     dense1 = tf.layers.dense(
         inputs=pool2_flat,
         units=1024, # number of neurons in the dense layer
-        activation=tf.nn.relu)
+        activation=tf.nn.relu,
+        name='dense1')
     dropout1 = tf.layers.dropout(
         inputs=dense1,
         rate=0.1,
-        training= mode=='TRAIN')
+        training= mode=='TRAIN',
+        name='dropout1')
     dense2 = tf.layers.dense(
         inputs=dropout1,
         units=512, # number of neurons in the dense layer
-        activation=tf.nn.relu)
+        activation=tf.nn.relu,
+        name='dense2')
     dropout2 = tf.layers.dropout(
         inputs=dense2,
         rate=0.1,
-        training= mode=='TRAIN')
+        training= mode=='TRAIN',
+        name='dropout2')
     ########## Core Visual Model ##########
     
     ########## Transformation ##########
-    visual_embeddings = tf.layers.dense(inputs=dropout2, units=TEXT_EMBEDDING_SIZE)
+    visual_embeddings = tf.layers.dense(inputs=dropout2, units=TEXT_EMBEDDING_SIZE, name='transform')
     tf.summary.histogram('visual_embeddings', visual_embeddings)
     ########## Transformation ##########
     
@@ -132,17 +136,17 @@ def max_margin_loss(visual_embeddings, y):
 #                             + tf.tensordot(classes_text_embedding[j], visual_embeddings[i], axes=1)))
 #         loss -= MARGIN
 #     loss /= BATCH_SIZE
+    with tf.name_scope('loss'):
+        loss = tf.constant(0.0)
 
-    loss = 0.0
-
-    predic_true_distance = tf.reduce_sum(tf.multiply(y, visual_embeddings), axis=1, keep_dims=True)
-#     print("predic_true_distance:", predic_true_distance)
-    for j in range(len(classes_text_embedding)):
-        loss+= tf.maximum(0.0, (MARGIN - predic_true_distance
-                        + tf.reduce_sum(tf.multiply(classes_text_embedding[j], visual_embeddings),axis=1, keep_dims=True)))
-    loss-= MARGIN
-    loss = tf.reduce_sum(loss)
-    loss /= BATCH_SIZE
+        predic_true_distance = tf.reduce_sum(tf.multiply(y, visual_embeddings), axis=1, keep_dims=True)
+        print("predic_true_distance:", predic_true_distance)
+        for j in range(len(classes_text_embedding)):
+            loss = tf.add(loss, tf.maximum(0.0, (MARGIN - predic_true_distance 
+                                    + tf.reduce_sum(tf.multiply(classes_text_embedding[j], visual_embeddings),axis=1, keep_dims=True))))
+        loss = tf.subtract(loss, MARGIN)
+        loss = tf.reduce_sum(loss)
+        loss = tf.div(loss, BATCH_SIZE)
 
 #     num_classes = len(CLASSES)
 #     loss = 0.0
@@ -177,14 +181,13 @@ def train(X_train, y_train, X_validate, y_validate, optimizer, epoch_bound, stop
     best_loss = np.infty
     
     for epoch in range(epoch_bound):
-        print('Epoch: ', epoch)
+
         # randomize training set
         indices_training = np.random.permutation(X_train.shape[0])
         X_train, y_train = X_train[indices_training,:], y_train[indices_training,:]
-        # split training set into multiple mini-batches and start training
-        
+
+        # split training set into multiple mini-batches and start training        
         total_batches = int(X_train.shape[0] / batch_size)
-        
         for batch in range(total_batches):
             if batch == total_batches - 1:
                 sess.run(optimizer, feed_dict={x: X_train[batch*batch_size:], 
@@ -194,28 +197,27 @@ def train(X_train, y_train, X_validate, y_validate, optimizer, epoch_bound, stop
                 sess.run(optimizer, feed_dict={x: X_train[batch*batch_size : (batch+1)*batch_size], 
                                                y: y_train[batch*batch_size : (batch+1)*batch_size], 
                                                mode:'TRAIN'})
-        print('Validating...')
+        # print('Validating...')
        
-    # split validation set into multiple mini-batches and start validating
+        # split validation set into multiple mini-batches and start validating
         cur_loss = 0.0
         total_batches = int(X_validate.shape[0] / batch_size)
         for batch in range(total_batches):
-            cur_loss = tf.add(cur_loss, loss)
-            tf.summary.scalar('loss', cur_loss)
+            # cur_loss = tf.add(cur_loss, loss)
+            # tf.summary.scalar('loss', cur_loss)
             
             #print('Merged: ', merged)
             if batch == total_batches - 1:
-                cur_loss = sess.run(cur_loss, feed_dict={x:X_validate[batch*batch_size:]
-                                                           , y:y_validate[batch*batch_size:]
-                                                           , mode:'EVAL'})
+                cur_loss += sess.run(loss, feed_dict={x:X_validate[batch*batch_size:],
+                                                     y:y_validate[batch*batch_size:],
+                                                     mode:'EVAL'})
             else:
-                cur_loss = sess.run(cur_loss, feed_dict={x:X_validate[batch*batch_size : (batch+1)*batch_size]
-                                                           , y:y_validate[batch*batch_size : (batch+1)*batch_size]
-                                                           , mode:'EVAL'})
+                cur_loss += sess.run(loss, feed_dict={x:X_validate[batch*batch_size : (batch+1)*batch_size],
+                                                     y:y_validate[batch*batch_size : (batch+1)*batch_size],
+                                                     mode:'EVAL'})
         cur_loss /= total_batches
 
         #writer.add_summary(summary, tf.train.get_global_step())
-        print('Loss: ', cur_loss)
         
         # #test for prediction
         # prediction = sess.run(predictions, feed_dict={x:X_validate, y:y_validate, mode:'EVAL'})
@@ -230,6 +232,7 @@ def train(X_train, y_train, X_validate, y_validate, optimizer, epoch_bound, stop
                 save_path = saver.save(sess, STORED_PATH)
         else:
             early_stop += 1
+        print('\tEpoch: ', epoch, '\tBest loss: ', best_loss, '\tCurrent loss: ', cur_loss)
         if early_stop == stop_threshold:
             break
 
@@ -285,11 +288,10 @@ train_labels = np.asarray(train_set[b'fine_labels'], dtype=np.int32)
 
 # Load testing data
 test_set = unpickle('./Data/cifar-100/test')
-eval_data =np.asarray(test_set[b'data'], dtype=np.float32) # shape (10000, 3072) 50000 images of 32x32x3 values
+eval_data = np.asarray(test_set[b'data'], dtype=np.float32) # shape (10000, 3072) 50000 images of 32x32x3 values
 eval_labels = np.asarray(test_set[b'fine_labels'], dtype=np.int32)
 
 # 100 labels of cifar-100
-CLASSES = []
 # cifar-100 class list
 # fine_labels: 100 labels of classes
 # coarse_labels: 20 labels of super classes
@@ -305,6 +307,8 @@ print("eval_labels_embeddings shape:", eval_labels_embeddings.shape, "type:", ev
 
 
 classes_text_embedding = text_embedding_model.get_classes_text_embedding(all_text_embedding, TEXT_EMBEDDING_SIZE, CLASSES)
+print('classes_text_embedding shape:', classes_text_embedding.shape)
+print('classes_text_embedding len:', len(classes_text_embedding))
 #nearest_neighbors = text_embedding_model.nearest_neighbor_embeddings(classes_text_embedding[2], all_text_embedding, 10)
 #print("Nearest neighbors", nearest_neighbors[0][0])
 
@@ -315,11 +319,13 @@ print('Train Label shape: ', train_labels.shape)
 ########## Data ##########
 
 ########## devise classifier ##########
-x = tf.placeholder(tf.float32, [None, train_data.shape[1]])
-y = tf.placeholder(tf.float32, [None, train_labels_embeddings.shape[1]])
-mode = tf.placeholder(tf.string)
+x = tf.placeholder(tf.float32, [None, train_data.shape[1]], name='x')
+y = tf.placeholder(tf.float32, [None, train_labels_embeddings.shape[1]], name='y')
+mode = tf.placeholder(tf.string, name='mode')
 
 visual_embeddings = devise_model(x, y, mode)
+print('visual_embeddings:', visual_embeddings)
+print('y', y)
 # Calculate Loss (for both TRAIN and EVAL modes)
 #onehot_labels = tf.one_hot(indices=tf.cast(y, tf.int32), depth=100)
 #loss = tf.losses.softmax_cross_entropy(onehot_labels=onehot_labels, logits=logits)
@@ -392,12 +398,15 @@ if TAKE_CROSS_VALIDATION == True:
     print("Average loss of cross validation:", avg_loss)
 
 
-if os.path.exists(STORED_PATH+".meta") == True:
-    # restore the precious best model
-    saver.restore(sess, STORED_PATH)
-else:
-    # init weights
-    sess.run(init)
+# if os.path.exists(STORED_PATH+".meta") == True:
+#     # restore the precious best model
+#     saver.restore(sess, STORED_PATH)
+# else:
+#     # init weights
+#     sess.run(init)
+
+# init weights
+sess.run(init)
     
 # randomize dataset
 indices = np.random.permutation(train_data.shape[0])
