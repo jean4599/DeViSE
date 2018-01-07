@@ -12,6 +12,7 @@ tf.logging.set_verbosity(tf.logging.INFO)
 
 ########## Hyperparameter ##########
 BATCH_SIZE = 20
+VALIDATION_SIZE = 500
 EPOCH_BOUND = 1000
 EARLY_STOP_CHECK_EPOCH = 20
 TAKE_CROSS_VALIDATION = False
@@ -30,13 +31,14 @@ def cnn_model(features, labels, mode):
     # Input Layer
     # input layer shape should be [batch_size, image_width, image_height, channels] for conv2d
     # set batch_size = -1 means batch_size = the number of input
-    print('input data shape: ', features)
+    print('input features shape: ', features)
+    print('input labels shape: ', labels)
     input_layer = tf.reshape(features, [-1, 32, 32, 3])
     print('input layer shape: ', input_layer.shape)
     # conv1
     with tf.variable_scope('conv1') as scope:
         kernel = weight_variable(shape=[5, 5, 3, 64]) #shape=[filter_height * filter_width * in_channels, output_channels]
-        conv = tf.nn.conv2d(input_layer, kernel, [1, 1, 1, 1], padding='SAME')
+        conv = tf.nn.conv2d(input_layer, kernel, strides=[1, 1, 1, 1], padding='SAME')
         biases = bias_variable(shape=[64], w=0.0)
         pre_activation = tf.nn.bias_add(conv, biases)
         conv1 = tf.nn.relu(pre_activation, name=scope.name)
@@ -50,7 +52,7 @@ def cnn_model(features, labels, mode):
     # conv2
     with tf.variable_scope('conv2') as scope:
         kernel = weight_variable(shape=[5, 5, 64, 64])
-        conv = tf.nn.conv2d(norm1, kernel, [1, 1, 1, 1], padding='SAME')
+        conv = tf.nn.conv2d(norm1, kernel, strides=[1, 1, 1, 1], padding='SAME')
         biases = bias_variable(shape=[64], w=0.1)
         pre_activation = tf.nn.bias_add(conv, biases)
         conv2 = tf.nn.relu(pre_activation, name=scope.name)
@@ -93,10 +95,11 @@ def train(X_train, y_train, X_validate, y_validate, optimizer, epoch_bound, stop
 
     global saver
     global predictions
-    global loss
+    global loss, accuracy
     
     early_stop = 0
     winner_loss = np.infty
+    winner_accuracy = 0.0
     
     for epoch in range(epoch_bound):
 
@@ -118,32 +121,41 @@ def train(X_train, y_train, X_validate, y_validate, optimizer, epoch_bound, stop
         
         # split validation set into multiple mini-batches and start validating
         cur_loss = 0.0
+        cur_accuracy = 0.0
         total_batches = int(X_validate.shape[0] / batch_size)
         for batch in range(total_batches):
             if batch == total_batches - 1:
                 cur_loss += sess.run(loss, feed_dict={x:X_validate[batch*batch_size:]
                                                            , y:y_validate[batch*batch_size:]
                                                            , mode:'EVAL'})
+                cur_accuracy += sess.run(accuracy, feed_dict={x:X_validate[batch*batch_size:]
+                                                           , y:y_validate[batch*batch_size:]
+                                                           , mode:'EVAL'})
             else:
                 cur_loss += sess.run(loss, feed_dict={x:X_validate[batch*batch_size : (batch+1)*batch_size]
                                                            , y:y_validate[batch*batch_size : (batch+1)*batch_size]
                                                            , mode:'EVAL'})
+                cur_accuracy += sess.run(accuracy, feed_dict={x:X_validate[batch*batch_size:]
+                                                           , y:y_validate[batch*batch_size:]
+                                                           , mode:'EVAL'})
         cur_loss /= total_batches
-        print('\tEpoch: ', epoch, '\tBest loss: ', winner_loss, '\tLoss: ', cur_loss)
+        cur_accuracy /= total_batches
         
         # If the accuracy rate does not increase for many times, it will early stop epochs-loop 
         if cur_loss < winner_loss:
             early_stop = 0
             winner_loss = cur_loss
+            winner_accuracy = cur_accuracy
             # save best model in testing phase
             if testing == True:
                 save_path = saver.save(sess, "./saved_model/cifar-100.ckpt")
         else:
             early_stop += 1
+        print('\tEpoch: ', epoch, '\tBest loss: ', winner_loss, '\tLoss: ', cur_loss, '\tAccuracy: ', cur_accuracy)
         if early_stop == stop_threshold:
             break
 
-    return winner_loss
+    return winner_loss, winner_accuracy
 
 def unpickle(file):
         import pickle
@@ -273,13 +285,16 @@ indices = np.random.permutation(train_data.shape[0])
 Inputs, Labels = np.array(train_data[indices,:]), np.array(train_labels[indices])
 
 # get validation set with the size of a batch for early-stop
-X_train, y_train = Inputs[BATCH_SIZE:], Labels[BATCH_SIZE:]
-X_validate, y_validate = Inputs[:BATCH_SIZE], Labels[:BATCH_SIZE]
+X_train, y_train = Inputs[VALIDATION_SIZE:], Labels[VALIDATION_SIZE:]
+X_validate, y_validate = Inputs[:VALIDATION_SIZE], Labels[:VALIDATION_SIZE]
+print('X_train: ', X_train.shape, 'y_train: ', y_train.shape)
+print('X_validate: ', X_validate.shape, 'y_validate: ', y_validate.shape)
+
 
 # start training with all the inputs
-winner_accuracy = train(X_train, y_train, X_validate, y_validate
+winner_loss, winner_accuracy = train(X_train, y_train, X_validate, y_validate
                         , train_op, EPOCH_BOUND, EARLY_STOP_CHECK_EPOCH, BATCH_SIZE, testing=True)
-print("training with all the inputs, accuracy:", winner_accuracy)
+print("training with all the inputs, Best loss: ", winner_loss, "Best accuracy: ", winner_accuracy)
 
 
 sess.close()

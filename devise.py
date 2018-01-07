@@ -252,7 +252,7 @@ CLASSES = fine_class
 
 train_labels_embeddings = labels_2_embeddings(train_labels)
 eval_labels_embeddings = labels_2_embeddings(eval_labels)
-classes_text_embedding = labels_2_embeddings(CLASSES)
+classes_text_embedding = text_embedding_model.get_classes_text_embedding(all_text_embedding, TEXT_EMBEDDING_SIZE, CLASSES)
 
 print('Train Data shape: ',train_data.shape)
 print('Train Label shape: ', train_labels.shape)
@@ -269,15 +269,15 @@ visual_embeddings = devise_model(x, y, mode)
 
 # Calculate Loss (for both TRAIN and EVAL modes)
 with tf.name_scope('loss'):
-        loss = tf.constant(0.0)
+    loss = tf.constant(0.0)
 
-        predic_true_distance = tf.reduce_sum(tf.multiply(y, visual_embeddings), axis=1, keep_dims=True)
-        for j in range(len(classes_text_embedding)):
-            loss = tf.add(loss, tf.maximum(0.0, (MARGIN - predic_true_distance 
+    predic_true_distance = tf.reduce_sum(tf.multiply(y, visual_embeddings), axis=1, keep_dims=True)
+    for j in range(len(classes_text_embedding)):
+        loss = tf.add(loss, tf.maximum(0.0, (MARGIN - predic_true_distance 
                                     + tf.reduce_sum(tf.multiply(classes_text_embedding[j], visual_embeddings),axis=1, keep_dims=True))))
-        loss = tf.subtract(loss, MARGIN)
-        loss = tf.reduce_sum(loss)
-        loss = tf.div(loss, BATCH_SIZE)
+    loss = tf.subtract(loss, MARGIN)
+    loss = tf.reduce_sum(loss)
+    loss = tf.div(loss, BATCH_SIZE)
 
 
 print("loss defined")
