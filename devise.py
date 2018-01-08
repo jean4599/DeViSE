@@ -28,9 +28,13 @@ text_embedding_model = Word2Vec_Model(word2vec_model_path="./Data/glove.6B/glove
 all_text_embedding = text_embedding_model.load_light_word2vec()
 W2V_texts = np.array(list(all_text_embedding.keys()), dtype=np.str)
 print('W2V_texts', W2V_texts.shape)
-print('ScikitLearn Nearest Neighbors: ', text_embedding_model.train_nearest_neighbor(all_text_embedding, num_nearest_neighbor=5))
+
     
 ########## load Word2Vec model ##########
+def reset_graph(seed=42):
+    tf.reset_default_graph()
+    tf.set_random_seed(seed)
+    np.random.seed(seed)
 
 def show_graph(graph_def, max_const_size=32):
     """Visualize TensorFlow graph."""
@@ -253,6 +257,7 @@ CLASSES = fine_class
 train_labels_embeddings = labels_2_embeddings(train_labels)
 eval_labels_embeddings = labels_2_embeddings(eval_labels)
 classes_text_embedding = text_embedding_model.get_classes_text_embedding(all_text_embedding, TEXT_EMBEDDING_SIZE, CLASSES)
+print('ScikitLearn Nearest Neighbors: ', text_embedding_model.train_nearest_neighbor(classes_text_embedding, num_nearest_neighbor=5))
 
 print('Train Data shape: ',train_data.shape)
 print('Train Label shape: ', train_labels.shape)
@@ -261,14 +266,30 @@ print('Train Label shape: ', train_labels.shape)
 ########## Data ##########
 
 ########## devise classifier ##########
-x = tf.placeholder(tf.float32, [None, train_data.shape[1]], name='x')
-y = tf.placeholder(tf.float32, [None, train_labels_embeddings.shape[1]], name='y')
-mode = tf.placeholder(tf.string, name='mode')
+# x = tf.placeholder(tf.float32, [None, train_data.shape[1]], name='x')
 
-visual_embeddings = devise_model(x, y, mode)
+# mode = tf.placeholder(tf.string, name='mode')
+
+# visual_embeddings = devise_model(x, y, mode)
+
+reset_graph()
+# Transfer layers
+pretrained_model_path = "./saved_model/cifar-100"
+# Get graph from pretrained visual model
+pretrained_saver = tf.train.import_meta_graph(pretrained_model_path + ".ckpt.meta")
+# get variables of cifar-100 cnn model
+x = tf.get_default_graph().get_tensor_by_name("x:0")
+y = tf.placeholder(tf.float32, [None, train_labels_embeddings.shape[1]], name='y')
+# y = tf.get_default_graph().get_tensor_by_name("y:0")
+mode = tf.get_default_graph().get_tensor_by_name("mode:0")
+cnn_output = tf.get_default_graph().get_tensor_by_name("dense2/Relu:0")
+# attach transform layer
+visual_embeddings = tf.layers.dense(inputs=cnn_output, units=TEXT_EMBEDDING_SIZE, name='transform')
+# get training parameter in transform layer for training operation
+training_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="transform")
 
 # Calculate Loss (for both TRAIN and EVAL modes)
-with tf.name_scope('loss'):
+with tf.name_scope('devise_loss'):
     loss = tf.constant(0.0)
 
     predic_true_distance = tf.reduce_sum(tf.multiply(y, visual_embeddings), axis=1, keep_dims=True)
@@ -281,14 +302,9 @@ with tf.name_scope('loss'):
 
 
 print("loss defined")
-# Training iteration (for TRAIN)
+# Define optimizer and Training iteration (for TRAIN)
 optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01)
-train_op = optimizer.minimize(
-            loss=loss,
-            global_step=tf.train.get_global_step())
-
-
-show_graph(tf.get_default_graph().as_graph_def())
+train_op = optimizer.minimize(loss=loss, var_list = training_vars, name="train_op")
 
 ########## devise classifier ##########
 
@@ -301,10 +317,14 @@ saver = tf.train.Saver()
 merged = tf.summary.merge_all()
 writer = tf.summary.FileWriter("logs/", sess.graph)
 
-# randomize dataset
-indices = np.random.permutation(train_data.shape[0])
 # init weights
 sess.run(init)
+# restore value from pretrained model
+pretrained_saver.restore = (sess, pretrained_model_path + ".ckpt")
+for var in training_vars:
+    sess.run(var.initializer)
+# randomize dataset
+indices = np.random.permutation(train_data.shape[0])
 # start cross validation
 avg_loss = 0.0
 
@@ -363,15 +383,20 @@ sess.close()
 print("########## Start evaluating ##########")
 sess = tf.Session()
 # restore the precious best model
+saver = tf.train.Saver()
 saver.restore(sess, STORED_PATH)
 
-
+hit = 0
 for i in range(10):
-    predict_embeddings = sess.run(visual_embeddings, feed_dict={x:eval_data[i*200:(i+1)*200], y:eval_labels_embeddings[i*200:(i+1)*200], mode:'EVAL'})
-    predict_labels = text_embedding_model.get_nearest_neighbor_labels(predict_embeddings, W2V_texts)
+    predict_embeddings = sess.run(visual_embeddings, feed_dict={x:eval_data[i*1000:(i+1)*1000], y:eval_labels_embeddings[i*1000:(i+1)*1000], mode:'EVAL'})
+    predict_labels = text_embedding_model.get_nearest_neighbor_labels(predict_embeddings, CLASSES)
     print('Predic nearest neighbor: ')
     for idx, label in enumerate(predict_labels):
-        print('Predict top 5 labels:', label, 'True lable:', eval_labels[idx])
+        print('Predict top 5 labels:', label, 'True lable:', CLASSES[eval_labels[idx]])
+        if(CLASSES[eval_labels[idx]] in label):
+            hit+=1
+
+print("Test result: Top 5 hit rate", hit/100, "%")
 
 #print('Test accuracy: ', testing_accuracy/5)
 sess.close()

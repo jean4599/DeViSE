@@ -73,16 +73,13 @@ class Word2Vec_Model():
 
         # return all_text_embedding.most_similar(positive=[input_embedding], topn=num_nearest_neighbor)
     
-    def train_nearest_neighbor(self, all_text_embedding, num_nearest_neighbor=1):
+    def train_nearest_neighbor(self, samples, num_nearest_neighbor=1):
         print("NearestNeighbors training start...")
-        embeddings = list(all_text_embedding.values())
-        embeddings = np.array(embeddings, dtype=np.float32) # Get embeddings from all_text_embedding dictionary
-        print('In train_nearest_neighbor: embeddings shape:', embeddings.shape)
-        nbrs = NearestNeighbors(num_nearest_neighbor, algorithm='ball_tree').fit(embeddings)
+        embeddings = np.array(samples, dtype=np.float32) # Get embeddings from all_text_embedding dictionary
+        print('In train_nearest_neighbor: embeddings shape:', samples.shape)
+        nbrs = NearestNeighbors(num_nearest_neighbor, algorithm='ball_tree').fit(samples)
         self.nearest_neighbor = nbrs
-        distances, indices = self.nearest_neighbor.kneighbors([all_text_embedding['dog']])
-        print(distances)
-        print(indices)
+       
         return 'NearestNeighbors training finished!'
 
     # Action: Find [num_nearest_neighbor] nearest neighbor(s) of [input_embedding] in [all_text_embedding]
