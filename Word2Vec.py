@@ -11,10 +11,11 @@ from gensim.models.keyedvectors import KeyedVectors
 
 
 class Word2Vec_Model():
-    def __init__(self, training_data=None, word2vec_model_path=None, nearest_neighbor=None):
+    def __init__(self, training_data=None, word2vec_model_path=None, model=None, nearest_neighbor=None):
 
         self.training_data = training_data
         self.word2vec_model_path = word2vec_model_path
+        self.model = model
         self.nearest_neighbor = nearest_neighbor
 
 
@@ -25,8 +26,8 @@ class Word2Vec_Model():
 
     def load_word2vec(self):
         print("##### loading word2vec model #####")
-        model = KeyedVectors.load_word2vec_format(self.word2vec_model_path, binary=False)
-        return model
+        self.model = KeyedVectors.load_word2vec_format(self.word2vec_model_path, binary=False)
+        return self.model
 
     def load_light_word2vec(self):
         print ("##### Loading light-weight Glove Word2Vec Model #####")
@@ -38,9 +39,10 @@ class Word2Vec_Model():
                 embedding = np.array([float(val) for val in splitLine[1:]], dtype=np.float32)
                 model[word] = embedding
             print ("Done.", len(model), " words loaded!")
+        self.model = model
         return model
 
-    def text_embedding_lookup(self, all_text_embedding, embedding_dim, label):
+    def text_embedding_lookup(self, embedding_dim, label):
         # labels_embedding = np.zeros((labels.shape[0], all_text_embedding.vector_size))
         # for i, label in enumerate (labels):
         #     labels_embedding[i] = classes[label]
@@ -49,13 +51,13 @@ class Word2Vec_Model():
             num_word = 0
             for word in label.split("_"):
                 num_word += 1
-                embedding += all_text_embedding[word]
+                embedding += self.model[word]
             embedding /= num_word
         else: 
-            embedding = all_text_embedding[label]
+            embedding = self.model[label]
         return embedding
 
-    def get_classes_text_embedding(self, all_text_embedding, embedding_dim, classes):
+    def get_classes_text_embedding(self, embedding_dim, classes):
         classes_text_embedding = []
         for class_label in classes:
             if "_" in class_label:
@@ -63,10 +65,10 @@ class Word2Vec_Model():
                 embedding = [0.0 for x in range(embedding_dim)]
                 for word in class_label.split("_"):
                     word_len += 1
-                    embedding += all_text_embedding[word]
+                    embedding += self.model[word]
                 classes_text_embedding.append(embedding/word_len)
             else: 
-                classes_text_embedding.append(all_text_embedding[class_label])
+                classes_text_embedding.append(self.model[class_label])
         return np.array(classes_text_embedding, dtype=np.float32)
 
     #def nearest_neighbor_embeddings(self, input_embedding, all_text_embedding, num_nearest_neighbor):

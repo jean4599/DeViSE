@@ -7,6 +7,7 @@
 import tensorflow as tf
 import numpy as np
 import os
+import DataAugmentation
 from Word2Vec import Word2Vec_Model
 from IPython.display import clear_output, Image, display, HTML
 
@@ -14,20 +15,24 @@ tf.logging.set_verbosity(tf.logging.INFO)
 
 ########## Hyperparameter ##########
 BATCH_SIZE = 20
+VALIDATION_SIZE = 500
 EPOCH_BOUND = 1000
 EARLY_STOP_CHECK_EPOCH = 20
 TAKE_CROSS_VALIDATION = False
 CROSS_VALIDATION = 5
-TEXT_EMBEDDING_SIZE = 50
+TEXT_EMBEDDING_SIZE = 300
 MARGIN = 0.1
 STORED_PATH = "./devise_model/devise.ckpt"
 ########## Hyperparameter ##########
 
 ########## load Word2Vec model ##########
-text_embedding_model = Word2Vec_Model(word2vec_model_path="./Data/glove.6B/glove.6B.50d.txt")
-all_text_embedding = text_embedding_model.load_light_word2vec()
-W2V_texts = np.array(list(all_text_embedding.keys()), dtype=np.str)
-print('W2V_texts', W2V_texts.shape)
+# text_embedding_model = Word2Vec_Model(word2vec_model_path="./Data/glove.6B/glove.6B.50d.txt")
+# all_text_embedding = text_embedding_model.load_light_word2vec()
+# W2V_texts = np.array(list(all_text_embedding.keys()), dtype=np.str)
+# print('W2V_texts', W2V_texts.shape)
+
+text_embedding_model = Word2Vec_Model(word2vec_model_path="./Data/wiki.en.vec")
+all_text_embedding = text_embedding_model.load_word2vec()
 
     
 ########## load Word2Vec model ##########
@@ -132,8 +137,8 @@ def devise_model(features, labels, mode):
 
 def train(X_train, y_train, X_validate, y_validate, optimizer, epoch_bound, stop_threshold, batch_size, testing=False):
 
-    global saver
-    global loss ,writer, merged
+    global saver, loss
+    global writer, merged
     
     early_stop = 0
     best_loss = np.infty
@@ -151,11 +156,21 @@ def train(X_train, y_train, X_validate, y_validate, optimizer, epoch_bound, stop
                 sess.run(optimizer, feed_dict={x: X_train[batch*batch_size:], 
                                                y: y_train[batch*batch_size:], 
                                                mode:'TRAIN'})
+                summary = sess.run(merged, feed_dict={x: X_train[batch*batch_size:],
+                                                      y: y_train[batch*batch_size:],
+                                                      mode:'TRAIN'})
+                writer.add_summary(summary, epoch + (batch/total_batches))
+
+
             else:
                 sess.run(optimizer, feed_dict={x: X_train[batch*batch_size : (batch+1)*batch_size], 
                                                y: y_train[batch*batch_size : (batch+1)*batch_size], 
                                                mode:'TRAIN'})
-       
+                summary = sess.run(merged, feed_dict={x: X_train[batch*batch_size : (batch+1)*batch_size],
+                                                      y: y_train[batch*batch_size : (batch+1)*batch_size],
+                                                      mode:'TRAIN'})
+                writer.add_summary(summary, epoch + (batch/total_batches))
+
         # split validation set into multiple mini-batches and start validating
         cur_loss = 0.0
         total_batches = int(X_validate.shape[0] / batch_size)
@@ -170,8 +185,6 @@ def train(X_train, y_train, X_validate, y_validate, optimizer, epoch_bound, stop
                                                      y:y_validate[batch*batch_size : (batch+1)*batch_size],
                                                      mode:'EVAL'})
         cur_loss /= total_batches
-
-        #writer.add_summary(summary, tf.train.get_global_step())
         
         # #test for prediction
         # prediction = sess.run(predictions, feed_dict={x:X_validate, y:y_validate, mode:'EVAL'})
@@ -200,11 +213,11 @@ def unpickle(file):
         
 def labels_2_embeddings(labels):
     
-    global text_embedding_model, all_text_embedding, TEXT_EMBEDDING_SIZE, CLASSES
+    global text_embedding_model, TEXT_EMBEDDING_SIZE, CLASSES
     
     labels_embeddings = []
     for i in labels:
-        labels_embeddings.append(text_embedding_model.text_embedding_lookup(all_text_embedding, TEXT_EMBEDDING_SIZE, CLASSES[i]))
+        labels_embeddings.append(text_embedding_model.text_embedding_lookup(TEXT_EMBEDDING_SIZE, CLASSES[i]))
     labels_embeddings = np.array(labels_embeddings, dtype=np.float32)
     
     return labels_embeddings
@@ -235,15 +248,16 @@ def split_folds(indices, Inputs, Labels, cross_validation, fold):
 #         The image is stored in row-major order, so that the first 32 entries of the array are the red channel values of the first row of the image.
 # labels -- a list of 10000 numbers in the range 0-99. The number at index i indicates the label of the ith image in the array data.
 
-# Load training data
-train_set = unpickle('./Data/cifar-100/train')
-train_data = np.asarray(train_set[b'data'], dtype=np.float32) # shape (50000, 3072) 50000 images of 32x32x3 values
-train_labels = np.asarray(train_set[b'fine_labels'], dtype=np.int32)
+# Load training and testing data
+(train_data, train_labels), (eval_data, eval_labels) = DataAugmentation.load_data(path='./Data/cifar-100/')
+train_data = train_data.reshape(train_data.shape[0], 32*32*3)
+train_labels = train_labels.reshape(train_labels.shape[0])
+eval_data = eval_data.reshape(eval_data.shape[0], 32*32*3)
+eval_labels = eval_labels.reshape(eval_labels.shape[0])
 
-# Load testing data
-test_set = unpickle('./Data/cifar-100/test')
-eval_data = np.asarray(test_set[b'data'], dtype=np.float32) # shape (10000, 3072) 50000 images of 32x32x3 values
-eval_labels = np.asarray(test_set[b'fine_labels'], dtype=np.int32)
+# normalize inputs from 0-255 to 0.0-1.0
+train_data = train_data / 255.0
+eval_data = eval_data / 255.0
 
 # 100 labels of cifar-100
 # cifar-100 class list
@@ -256,7 +270,7 @@ CLASSES = fine_class
 
 train_labels_embeddings = labels_2_embeddings(train_labels)
 eval_labels_embeddings = labels_2_embeddings(eval_labels)
-classes_text_embedding = text_embedding_model.get_classes_text_embedding(all_text_embedding, TEXT_EMBEDDING_SIZE, CLASSES)
+classes_text_embedding = text_embedding_model.get_classes_text_embedding(TEXT_EMBEDDING_SIZE, CLASSES)
 print('ScikitLearn Nearest Neighbors: ', text_embedding_model.train_nearest_neighbor(classes_text_embedding, num_nearest_neighbor=5))
 
 print('Train Data shape: ',train_data.shape)
@@ -282,16 +296,21 @@ x = tf.get_default_graph().get_tensor_by_name("x:0")
 y = tf.placeholder(tf.float32, [None, train_labels_embeddings.shape[1]], name='y')
 # y = tf.get_default_graph().get_tensor_by_name("y:0")
 mode = tf.get_default_graph().get_tensor_by_name("mode:0")
-cnn_output = tf.get_default_graph().get_tensor_by_name("dense2/Relu:0")
+
+cnn_output = tf.get_default_graph().get_tensor_by_name("dropout2/Identity:0")
+tf.summary.histogram('cnn_output', cnn_output)
+
 # attach transform layer
-visual_embeddings = tf.layers.dense(inputs=cnn_output, units=TEXT_EMBEDDING_SIZE, name='transform')
+with tf.name_scope('transform'):
+    visual_embeddings = tf.layers.dense(inputs=cnn_output, units=TEXT_EMBEDDING_SIZE, name='transform')
+    tf.summary.histogram('visual_embeddings', visual_embeddings)
+
 # get training parameter in transform layer for training operation
 training_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="transform")
 
 # Calculate Loss (for both TRAIN and EVAL modes)
 with tf.name_scope('devise_loss'):
     loss = tf.constant(0.0)
-
     predic_true_distance = tf.reduce_sum(tf.multiply(y, visual_embeddings), axis=1, keep_dims=True)
     for j in range(len(classes_text_embedding)):
         loss = tf.add(loss, tf.maximum(0.0, (MARGIN - predic_true_distance 
@@ -299,6 +318,7 @@ with tf.name_scope('devise_loss'):
     loss = tf.subtract(loss, MARGIN)
     loss = tf.reduce_sum(loss)
     loss = tf.div(loss, BATCH_SIZE)
+    tf.summary.scalar('loss', loss)
 
 
 print("loss defined")
@@ -314,6 +334,7 @@ sess = tf.Session()
 init = tf.global_variables_initializer()
 # init saver to save model
 saver = tf.train.Saver()
+# visualize data
 merged = tf.summary.merge_all()
 writer = tf.summary.FileWriter("logs/", sess.graph)
 
@@ -365,8 +386,10 @@ indices = np.random.permutation(train_data.shape[0])
 Inputs, Labels = np.array(train_data[indices,:]), np.array(train_labels_embeddings[indices,:])
 
 # get validation set with the size of a batch for early-stop
-X_train, y_train = Inputs[BATCH_SIZE:], Labels[BATCH_SIZE:]
-X_validate, y_validate = Inputs[:BATCH_SIZE], Labels[:BATCH_SIZE]
+X_train, y_train = Inputs[VALIDATION_SIZE:], Labels[VALIDATION_SIZE:]
+X_validate, y_validate = Inputs[:VALIDATION_SIZE], Labels[:VALIDATION_SIZE]
+
+print('X_train[0]: ', X_train[0])
 
 # start training with all the inputs
 best_loss = train(X_train, y_train, X_validate, y_validate

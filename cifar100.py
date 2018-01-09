@@ -7,6 +7,8 @@
 import tensorflow as tf
 import numpy as np
 import os
+import DataAugmentation
+
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
@@ -35,106 +37,106 @@ def cnn_model(features, labels, mode):
     print('input labels shape: ', labels)
     input_layer = tf.reshape(features, [-1, 32, 32, 3])
     print('input layer shape: ', input_layer.shape)
-    # # conv1
-    # with tf.variable_scope('conv1') as scope:
-    #     kernel = weight_variable(shape=[5, 5, 3, 64]) #shape=[filter_height * filter_width * in_channels, output_channels]
-    #     conv = tf.nn.conv2d(input_layer, kernel, strides=[1, 1, 1, 1], padding='SAME')
-    #     biases = bias_variable(shape=[64], w=0.1)
-    #     pre_activation = tf.nn.bias_add(conv, biases)
-    #     conv1 = tf.nn.relu(pre_activation, name=scope.name)
-    # print("conv1 tensor: ", conv1)
-    # # norm1
-    # norm1 = tf.nn.lrn(conv1, depth_radius=4, bias=1.0, alpha=0.001/9.0 , beta=0.75, name='norm1')
-    # print("norm1 tensor: ", norm1) 
-    # # pool1
-    # pool1 = tf.nn.max_pool(norm1, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool1')
-    # print("pool1 tensor: ", pool1)
-
-    # # conv2
-    # with tf.variable_scope('conv2') as scope:
-    #     kernel = weight_variable(shape=[5, 5, 64, 64])
-    #     conv = tf.nn.conv2d(pool1, kernel, strides=[1, 1, 1, 1], padding='SAME')
-    #     biases = bias_variable(shape=[64], w=0.1)
-    #     pre_activation = tf.nn.bias_add(conv, biases)
-    #     conv2 = tf.nn.relu(pre_activation, name=scope.name)
-    # print("conv2 tensor: ", conv2)
-    # # norm2
-    # norm2 = tf.nn.lrn(conv2, depth_radius=4, bias=1.0, alpha=0.001/9.0 , beta=0.75, name='norm2')
-    # print("norm2 tensor: ", norm2)
-    # # pool2
-    # pool2 = tf.nn.max_pool(norm2, ksize=[1, 3, 3, 1],
-    #                      strides=[1, 2, 2, 1], padding='SAME', name='pool2')
-    # print("pool2 tensor: ", pool2) 
-    # pool2_flat = tf.reshape(pool2, [-1, 8*8*64])
     # conv1
     with tf.variable_scope('conv1') as scope:
-        kernel = weight_variable(shape=[5, 5, 3, 32]) #shape=[filter_height * filter_width * in_channels, output_channels]
+        kernel = weight_variable(shape=[5, 5, 3, 64]) #shape=[filter_height * filter_width * in_channels, output_channels]
         conv = tf.nn.conv2d(input_layer, kernel, strides=[1, 1, 1, 1], padding='SAME')
-        biases = bias_variable(shape=[32], w=0.1)
+        biases = bias_variable(shape=[64], w=0.1)
         pre_activation = tf.nn.bias_add(conv, biases)
         conv1 = tf.nn.relu(pre_activation, name=scope.name)
     print("conv1 tensor: ", conv1)
     # norm1
-    norm1 = tf.nn.lrn(conv1, depth_radius=4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm1')
+    norm1 = tf.nn.lrn(conv1, depth_radius=4, bias=1.0, alpha=0.001/9.0 , beta=0.75, name='norm1')
     print("norm1 tensor: ", norm1) 
     # pool1
-    pool1 = tf.nn.max_pool(norm1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='VALID', name='pool1')
+    pool1 = tf.nn.max_pool(norm1, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool1')
     print("pool1 tensor: ", pool1)
 
     # conv2
     with tf.variable_scope('conv2') as scope:
-        kernel = weight_variable(shape=[5, 5, 32, 48])
+        kernel = weight_variable(shape=[5, 5, 64, 64])
         conv = tf.nn.conv2d(pool1, kernel, strides=[1, 1, 1, 1], padding='SAME')
-        biases = bias_variable(shape=[48], w=0.1)
+        biases = bias_variable(shape=[64], w=0.1)
         pre_activation = tf.nn.bias_add(conv, biases)
         conv2 = tf.nn.relu(pre_activation, name=scope.name)
     print("conv2 tensor: ", conv2)
     # norm2
-    norm2 = tf.nn.lrn(conv2, depth_radius=4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm2')
+    norm2 = tf.nn.lrn(conv2, depth_radius=4, bias=1.0, alpha=0.001/9.0 , beta=0.75, name='norm2')
     print("norm2 tensor: ", norm2)
     # pool2
-    pool2 = tf.nn.max_pool(norm2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='VALID', name='pool2')
+    pool2 = tf.nn.max_pool(norm2, ksize=[1, 3, 3, 1],
+                         strides=[1, 2, 2, 1], padding='SAME', name='pool2')
     print("pool2 tensor: ", pool2) 
+    pool2_flat = tf.reshape(pool2, [-1, 8*8*64])
+    # conv1
+    # with tf.variable_scope('conv1') as scope:
+    #     kernel = weight_variable(shape=[5, 5, 3, 32]) #shape=[filter_height * filter_width * in_channels, output_channels]
+    #     conv = tf.nn.conv2d(input_layer, kernel, strides=[1, 1, 1, 1], padding='SAME')
+    #     biases = bias_variable(shape=[32], w=0.1)
+    #     pre_activation = tf.nn.bias_add(conv, biases)
+    #     conv1 = tf.nn.elu(pre_activation, name=scope.name)
+    # print("conv1 tensor: ", conv1)
+    # # # norm1
+    # # norm1 = tf.nn.lrn(conv1, depth_radius=4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm1')
+    # # print("norm1 tensor: ", norm1) 
+    # # pool1
+    # pool1 = tf.nn.max_pool(conv1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='VALID', name='pool1')
+    # print("pool1 tensor: ", pool1)
+
+    # # conv2
+    # with tf.variable_scope('conv2') as scope:
+    #     kernel = weight_variable(shape=[5, 5, 32, 48])
+    #     conv = tf.nn.conv2d(pool1, kernel, strides=[1, 1, 1, 1], padding='SAME')
+    #     biases = bias_variable(shape=[48], w=0.1)
+    #     pre_activation = tf.nn.bias_add(conv, biases)
+    #     conv2 = tf.nn.elu(pre_activation, name=scope.name)
+    # print("conv2 tensor: ", conv2)
+    # # # norm2
+    # # norm2 = tf.nn.lrn(conv2, depth_radius=4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm2')
+    # # print("norm2 tensor: ", norm2)
+    # # pool2
+    # pool2 = tf.nn.max_pool(conv2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='VALID', name='pool2')
+    # print("pool2 tensor: ", pool2) 
     
-    #conv3
-    with tf.variable_scope('conv3') as scope:
-        kernel = weight_variable(shape=[3, 3, 48, 64])
-        conv = tf.nn.conv2d(pool2, kernel, strides=[1, 1, 1, 1], padding='SAME')
-        biases = bias_variable(shape=[64], w=0.1)
-        pre_activation = tf.nn.bias_add(conv, biases)
-        conv3 = tf.nn.relu(pre_activation, name=scope.name)
-    print("conv3 tensor: ", conv3)
+    # #conv3
+    # with tf.variable_scope('conv3') as scope:
+    #     kernel = weight_variable(shape=[3, 3, 48, 64])
+    #     conv = tf.nn.conv2d(pool2, kernel, strides=[1, 1, 1, 1], padding='SAME')
+    #     biases = bias_variable(shape=[64], w=0.1)
+    #     pre_activation = tf.nn.bias_add(conv, biases)
+    #     conv3 = tf.nn.elu(pre_activation, name=scope.name)
+    # print("conv3 tensor: ", conv3)
 
-    #conv4
-    with tf.variable_scope('conv4') as scope:
-        kernel = weight_variable(shape=[3, 3, 64, 64])
-        conv = tf.nn.conv2d(conv3, kernel, strides=[1, 1, 1, 1], padding='SAME')
-        biases = bias_variable(shape=[64], w=0.1)
-        pre_activation = tf.nn.bias_add(conv, biases)
-        conv4 = tf.nn.relu(pre_activation, name=scope.name)
-    print("conv4 tensor: ", conv4)
+    # #conv4
+    # with tf.variable_scope('conv4') as scope:
+    #     kernel = weight_variable(shape=[3, 3, 64, 64])
+    #     conv = tf.nn.conv2d(conv3, kernel, strides=[1, 1, 1, 1], padding='SAME')
+    #     biases = bias_variable(shape=[64], w=0.1)
+    #     pre_activation = tf.nn.bias_add(conv, biases)
+    #     conv4 = tf.nn.elu(pre_activation, name=scope.name)
+    # print("conv4 tensor: ", conv4)
 
-    #conv5
-    with tf.variable_scope('conv5') as scope:
-        kernel = weight_variable(shape=[3, 3, 64, 48])
-        conv = tf.nn.conv2d(conv4, kernel, strides=[1, 1, 1, 1], padding='SAME')
-        biases = bias_variable(shape=[48], w=0.1)
-        pre_activation = tf.nn.bias_add(conv, biases)
-        conv5 = tf.nn.relu(pre_activation, name=scope.name)
-    print("conv5 tensor: ", conv5)
+    # #conv5
+    # with tf.variable_scope('conv5') as scope:
+    #     kernel = weight_variable(shape=[3, 3, 64, 48])
+    #     conv = tf.nn.conv2d(conv4, kernel, strides=[1, 1, 1, 1], padding='SAME')
+    #     biases = bias_variable(shape=[48], w=0.1)
+    #     pre_activation = tf.nn.bias_add(conv, biases)
+    #     conv5 = tf.nn.elu(pre_activation, name=scope.name)
+    # print("conv5 tensor: ", conv5)
 
-    # pool3
-    pool3 = tf.nn.max_pool(conv5, ksize=[1, 2, 2, 1],
-                         strides=[1, 2, 2, 1], padding='VALID', name='pool3')
-    print("pool3 tensor: ", pool3)
+    # # pool3
+    # pool3 = tf.nn.max_pool(conv5, ksize=[1, 2, 2, 1],
+    #                      strides=[1, 2, 2, 1], padding='VALID', name='pool3')
+    # print("pool3 tensor: ", pool3)
 
-    # flatten
-    pool3_flat = tf.reshape(pool3, [-1, 4*4*48])
+    # # flatten
+    # pool3_flat = tf.reshape(pool3, [-1, 4*4*48])
 
     dense1 = tf.layers.dense(
-        inputs=pool3_flat,
-        units=256, # number of neurons in the dense layer
-        activation=tf.nn.relu,
+        inputs=pool2_flat,
+        units=1024, # number of neurons in the dense layer
+        activation=tf.nn.elu,
         name='dense1')
     dropout1 = tf.layers.dropout(
         inputs=dense1,
@@ -143,34 +145,14 @@ def cnn_model(features, labels, mode):
         name='dropout1')
     dense2 = tf.layers.dense(
         inputs=dropout1,
-        units=256, # number of neurons in the dense layer
-        activation=tf.nn.relu,
+        units=1024, # number of neurons in the dense layer
+        activation=tf.nn.elu,
         name='dense2')
     dropout2 = tf.layers.dropout(
         inputs=dense2,
         rate=0.1,
         training= mode=='TRAIN',
         name='dropout2')
-    # dense3 = tf.layers.dense(
-    #     inputs=dropout2,
-    #     units=128, # number of neurons in the dense layer
-    #     activation=tf.nn.relu,
-    #     name='dense3')
-    # dropout3 = tf.layers.dropout(
-    #     inputs=dense3,
-    #     rate=0.5,
-    #     training= mode=='TRAIN',
-    #     name='dropout3')
-    # dense4 = tf.layers.dense(
-    #     inputs=dropout3,
-    #     units=256, # number of neurons in the dense layer
-    #     activation=tf.nn.relu,
-    #     name='dense4')
-    # dropout4 = tf.layers.dropout(
-    #     inputs=dense4,
-    #     rate=0.1,
-    #     training= mode=='TRAIN',
-    #     name='dropout4')
 
     # Logits Layer
     logits = tf.layers.dense(inputs=dropout2, units=100, name='logits')
@@ -274,15 +256,15 @@ def split_folds(indices, Inputs, Labels, cross_validation, fold):
 #         The image is stored in row-major order, so that the first 32 entries of the array are the red channel values of the first row of the image.
 # labels -- a list of 10000 numbers in the range 0-99. The number at index i indicates the label of the ith image in the array data.
 
-# Load training data
-train_set = unpickle('./Data/cifar-100/train')
-train_data = np.asarray(train_set[b'data'], dtype=np.float32) # shape (50000, 3072) 50000 images of 32x32x3 values
-train_labels = np.asarray(train_set[b'fine_labels'], dtype=np.int32)
+(train_data, train_labels), (eval_data, eval_labels) = DataAugmentation.load_data(path='./Data/cifar-100/')
+train_data = train_data.reshape(train_data.shape[0], 32*32*3)
+train_labels = train_labels.reshape(train_labels.shape[0])
+eval_data = eval_data.reshape(eval_data.shape[0], 32*32*3)
+eval_labels = eval_labels.reshape(eval_labels.shape[0])
 
-# Load testing data
-test_set = unpickle('./Data/cifar-100/test')
-eval_data =np.asarray(test_set[b'data'], dtype=np.float32) # shape (10000, 3072) 50000 images of 32x32x3 values
-eval_labels = np.asarray(test_set[b'fine_labels'], dtype=np.int32)
+# normalize inputs from 0-255 to 0.0-1.0
+train_data = train_data / 255.0
+eval_data = eval_data / 255.0
 
 print('Train Data shape: ',train_data.shape)
 print('Train Label shape: ', train_labels.shape)
