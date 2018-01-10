@@ -7,7 +7,7 @@
 import tensorflow as tf
 import numpy as np
 import os
-import DataAugmentation
+import get_data
 
 
 tf.logging.set_verbosity(tf.logging.INFO)
@@ -256,7 +256,7 @@ def split_folds(indices, Inputs, Labels, cross_validation, fold):
 #         The image is stored in row-major order, so that the first 32 entries of the array are the red channel values of the first row of the image.
 # labels -- a list of 10000 numbers in the range 0-99. The number at index i indicates the label of the ith image in the array data.
 
-(train_data, train_labels), (eval_data, eval_labels) = DataAugmentation.load_data(path='./Data/cifar-100/')
+(train_data, train_labels), (eval_data, eval_labels) = get_data.load_data(path='./Data/cifar-100/')
 train_data = train_data.reshape(train_data.shape[0], 32*32*3)
 train_labels = train_labels.reshape(train_labels.shape[0])
 eval_data = eval_data.reshape(eval_data.shape[0], 32*32*3)
