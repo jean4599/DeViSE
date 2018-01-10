@@ -26,14 +26,12 @@ STORED_PATH = "./devise_model/devise.ckpt"
 ########## Hyperparameter ##########
 
 ########## load Word2Vec model ##########
-# text_embedding_model = Word2Vec_Model(word2vec_model_path="./Data/glove.6B/glove.6B.50d.txt")
-# all_text_embedding = text_embedding_model.load_light_word2vec()
+# Word2Vec_Model = Word2Vec_Model(word2vec_model_path="./Data/glove.6B/glove.6B.50d.txt")
+# all_text_embedding = Word2Vec_Model.load_light_word2vec()
 # W2V_texts = np.array(list(all_text_embedding.keys()), dtype=np.str)
 # print('W2V_texts', W2V_texts.shape)
 
-text_embedding_model = Word2Vec_Model(word2vec_model_path="./Data/wiki.en.vec")
-all_text_embedding = text_embedding_model.load_word2vec()
-
+Word2Vec_Model = Word2Vec_Model(word2vec_model_path="./Data/wiki.en.vec")
     
 ########## load Word2Vec model ##########
 def reset_graph(seed=42):
@@ -213,11 +211,11 @@ def unpickle(file):
         
 def labels_2_embeddings(labels):
     
-    global text_embedding_model, TEXT_EMBEDDING_SIZE, CLASSES
+    global Word2Vec_Model, TEXT_EMBEDDING_SIZE, CLASSES
     
     labels_embeddings = []
     for i in labels:
-        labels_embeddings.append(text_embedding_model.text_embedding_lookup(TEXT_EMBEDDING_SIZE, CLASSES[i]))
+        labels_embeddings.append(Word2Vec_Model.text_embedding_lookup(TEXT_EMBEDDING_SIZE, CLASSES[i]))
     labels_embeddings = np.array(labels_embeddings, dtype=np.float32)
     
     return labels_embeddings
@@ -270,13 +268,11 @@ CLASSES = fine_class
 
 train_labels_embeddings = labels_2_embeddings(train_labels)
 eval_labels_embeddings = labels_2_embeddings(eval_labels)
-classes_text_embedding = text_embedding_model.get_classes_text_embedding(TEXT_EMBEDDING_SIZE, CLASSES)
-print('ScikitLearn Nearest Neighbors: ', text_embedding_model.train_nearest_neighbor(classes_text_embedding, num_nearest_neighbor=5))
+classes_text_embedding = Word2Vec_Model.get_classes_text_embedding(TEXT_EMBEDDING_SIZE, CLASSES)
+# print('ScikitLearn Nearest Neighbors: ', Word2Vec_Model.train_nearest_neighbor(classes_text_embedding, num_nearest_neighbor=5))
 
 print('Train Data shape: ',train_data.shape)
 print('Train Label shape: ', train_labels.shape)
-#print(all_text_embedding['baby', 'sister'])
-
 ########## Data ##########
 
 ########## devise classifier ##########
@@ -412,7 +408,7 @@ saver.restore(sess, STORED_PATH)
 hit = 0
 for i in range(10):
     predict_embeddings = sess.run(visual_embeddings, feed_dict={x:eval_data[i*1000:(i+1)*1000], y:eval_labels_embeddings[i*1000:(i+1)*1000], mode:'EVAL'})
-    predict_labels = text_embedding_model.get_nearest_neighbor_labels(predict_embeddings, CLASSES)
+    predict_labels = Word2Vec_Model.get_nearest_neighbor_labels(predict_embeddings)
     print('Predic nearest neighbor: ')
     for idx, label in enumerate(predict_labels):
         print('Predict top 5 labels:', label, 'True lable:', CLASSES[eval_labels[idx]])

@@ -17,17 +17,16 @@ class Word2Vec_Model():
         self.word2vec_model_path = word2vec_model_path
         self.model = model
         self.nearest_neighbor = nearest_neighbor
+        
+        if(word2vec_model_path!=''): ## if model path is given then load the existing model
+            print("##### loading word2vec model #####")
+            self.model = KeyedVectors.load_word2vec_format(self.word2vec_model_path, binary=False)
 
 
     def train_word2vec(self, inp, outp1, outp2):
         model = Word2Vec(LineSentence(inp), size=500, window=10, min_count=10, workers=multiprocessing.cpu_count()-1)
         model.wv.save_word2vec_format(outp1, binary=False)
         model.save(outp2)
-
-    def load_word2vec(self):
-        print("##### loading word2vec model #####")
-        self.model = KeyedVectors.load_word2vec_format(self.word2vec_model_path, binary=False)
-        return self.model
 
     def load_light_word2vec(self):
         print ("##### Loading light-weight Glove Word2Vec Model #####")
@@ -70,10 +69,6 @@ class Word2Vec_Model():
             else: 
                 classes_text_embedding.append(self.model[class_label])
         return np.array(classes_text_embedding, dtype=np.float32)
-
-    #def nearest_neighbor_embeddings(self, input_embedding, all_text_embedding, num_nearest_neighbor):
-
-        # return all_text_embedding.most_similar(positive=[input_embedding], topn=num_nearest_neighbor)
     
     def train_nearest_neighbor(self, samples, num_nearest_neighbor=1):
         print("NearestNeighbors training start...")
@@ -84,28 +79,16 @@ class Word2Vec_Model():
        
         return 'NearestNeighbors training finished!'
 
-    # Action: Find [num_nearest_neighbor] nearest neighbor(s) of [input_embedding] in [all_text_embedding]
-    # Member: all_text_embedding--a dinctionary with entries: {'label': text embedding}
-    # Member: input_embedding--a embedding 
-    def get_nearest_neighbor_labels(self, embeddings, labels):
-        distances, indices = self.nearest_neighbor.kneighbors(embeddings)
-        # indices: an array with shape [# of visual_embeddings, 5], each element is the index of a neibor
-        # distances: same shape of indeces, each element is the distance between visual_embeddings[i] and corresponding neighbor
-        print('In W2V NN')
-        print('Labels shape: ', labels.shape, 'label 0:', labels[0])
-        
+    def get_nearest_neighbor_labels(self, embeddings):
         nn_labels = []
-        for idx, index in enumerate(indices):
-            nn_labels.append(labels[index])
-
+        for vector in embeddings:
+            neighbors = self.model.similar_by_vector(positive=[self.model['chair']], topn=5)
+            # neighbors = [('label1', #similarity1),('label2', #similarity2),...]
+            print(neighbors)
+            neighbors_labels = list(dict(neighbors).keys())
+            nn_labels.append(neighbors_labels)
+        
         return np.array(nn_labels, dtype=np.str)
-
-
- 
-    # word2vec_model_path = "./Data/wiki.en.vec"
-    # #train_word2vec(inp, outp1, outp2)
-    # model = load_word2vec(word2vec_model_path)
-    # create_embedding_lookup_table(model, classes)
 
 
 
