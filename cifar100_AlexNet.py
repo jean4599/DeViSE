@@ -8,6 +8,7 @@ import tensorflow as tf
 import numpy as np
 import os
 import get_data
+import data_augmentation
 
 
 tf.logging.set_verbosity(tf.logging.INFO)
@@ -19,7 +20,7 @@ EPOCH_BOUND = 1000
 EARLY_STOP_CHECK_EPOCH = 20
 TAKE_CROSS_VALIDATION = False
 CROSS_VALIDATION = 5
-EPOCH_PER_DECAY = 15
+EPOCH_PER_DECAY = 10
 ########## Hyperparameter ##########
 
 def weight_variable(shape, w=0.1):
@@ -30,7 +31,36 @@ def bias_variable(shape, w=0.1):
     initial = tf.constant(w, shape=shape)
     return tf.Variable(initial)
 
-def cnn_model(features, labels, mode):
+def mean_var_with_update(ema, fc_mean, fc_var):
+    ema_apply_op = ema.apply([fc_mean, fc_var])
+    with tf.control_dependencies([ema_apply_op]):
+        return tf.identity(fc_mean), tf.identity(fc_var)
+
+def Conv2d(scope_name, inputs, filter_size, in_channels, output_channels, strides_moves, padding_mode, activation):
+    with tf.variable_scope(scope_name) as scope:
+        kernel = weight_variable(shape=[filter_size, filter_size, in_channels, output_channels])
+        conv = tf.nn.conv2d(inputs, kernel, strides=[1, strides_moves, strides_moves, 1], padding=padding_mode)
+        biases = bias_variable(shape=[output_channels], w=0.1)
+        pre_activation = tf.nn.bias_add(conv, biases)
+    return activation(pre_activation, name=scope.name)
+
+def Conv2d_BN(scope_name, inputs, filter_size, in_channels, output_channels, strides_moves, padding_mode, activation):
+    with tf.variable_scope(scope_name) as scope:
+        kernel = weight_variable(shape=[filter_size, filter_size, in_channels, output_channels])
+        conv = tf.nn.conv2d(inputs, kernel, strides=[1, strides_moves, strides_moves, 1], padding=padding_mode)
+        biases = bias_variable(shape=[output_channels], w=0.1)
+        pre_activation = tf.nn.bias_add(conv, biases)
+        fc_mean, fc_var = tf.nn.moments(pre_activation, axes=[0, 1, 2])
+        scale = tf.Variable(tf.ones([output_channels]))
+        shift = tf.Variable(tf.zeros([output_channels]))
+        epsilon = 0.001
+        ema = tf.train.ExponentialMovingAverage(decay=0.5)
+        # update mean and var when the value of mode is TRAIN, or back to the previous Moving Average of fc_mean and fc_var 
+        mean, var = tf.cond(train_mode, lambda: (mean_var_with_update(ema, fc_mean, fc_var)), lambda: (ema.average(fc_mean), ema.average(fc_var)))
+        pre_activation_with_BN = tf.nn.batch_normalization(pre_activation, mean, var, shift, scale, epsilon)
+    return activation(pre_activation_with_BN, name=scope.name)
+
+def cnn_model(features, labels, train_mode):
     # Input Layer
     # input layer shape should be [batch_size, image_width, image_height, channels] for conv2d
     # set batch_size = -1 means batch_size = the number of input
@@ -38,121 +68,54 @@ def cnn_model(features, labels, mode):
     print('input labels shape: ', labels)
     input_layer = tf.reshape(features, [-1, 32, 32, 3])
     print('input layer shape: ', input_layer.shape)
+
+    # AlexNet
     # conv1
-    with tf.variable_scope('conv1') as scope:
-        kernel = weight_variable(shape=[5, 5, 3, 64]) #shape=[filter_height * filter_width * in_channels, output_channels]
-        conv = tf.nn.conv2d(input_layer, kernel, strides=[1, 1, 1, 1], padding='SAME')
-        biases = bias_variable(shape=[64], w=0.1)
-        pre_activation = tf.nn.bias_add(conv, biases)
-        conv1 = tf.nn.relu(pre_activation, name=scope.name)
+    conv1 = Conv2d_BN('conv1', input_layer, 11, 3, 96, 4, 'SAME', tf.nn.relu)
     print("conv1 tensor: ", conv1)
-    # norm1
-    norm1 = tf.nn.lrn(conv1, depth_radius=4, bias=1.0, alpha=0.001/9.0 , beta=0.75, name='norm1')
-    print("norm1 tensor: ", norm1) 
     # pool1
-    pool1 = tf.nn.max_pool(norm1, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool1')
+    pool1 = tf.nn.max_pool(conv1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='VALID', name='pool1')
     print("pool1 tensor: ", pool1)
-
     # conv2
-    with tf.variable_scope('conv2') as scope:
-        kernel = weight_variable(shape=[5, 5, 64, 64])
-        conv = tf.nn.conv2d(pool1, kernel, strides=[1, 1, 1, 1], padding='SAME')
-        biases = bias_variable(shape=[64], w=0.1)
-        pre_activation = tf.nn.bias_add(conv, biases)
-        conv2 = tf.nn.relu(pre_activation, name=scope.name)
+    conv2 = Conv2d_BN('conv2', pool1, 5, 96, 256, 1, 'SAME', tf.nn.relu)
     print("conv2 tensor: ", conv2)
-    # norm2
-    norm2 = tf.nn.lrn(conv2, depth_radius=4, bias=1.0, alpha=0.001/9.0 , beta=0.75, name='norm2')
-    print("norm2 tensor: ", norm2)
     # pool2
-    pool2 = tf.nn.max_pool(norm2, ksize=[1, 3, 3, 1],
-                         strides=[1, 2, 2, 1], padding='SAME', name='pool2')
-    print("pool2 tensor: ", pool2) 
-    pool2_flat = tf.reshape(pool2, [-1, 8*8*64])
-    # conv1
-    # with tf.variable_scope('conv1') as scope:
-    #     kernel = weight_variable(shape=[5, 5, 3, 32]) #shape=[filter_height * filter_width * in_channels, output_channels]
-    #     conv = tf.nn.conv2d(input_layer, kernel, strides=[1, 1, 1, 1], padding='SAME')
-    #     biases = bias_variable(shape=[32], w=0.1)
-    #     pre_activation = tf.nn.bias_add(conv, biases)
-    #     conv1 = tf.nn.elu(pre_activation, name=scope.name)
-    # print("conv1 tensor: ", conv1)
-    # # # norm1
-    # # norm1 = tf.nn.lrn(conv1, depth_radius=4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm1')
-    # # print("norm1 tensor: ", norm1) 
-    # # pool1
-    # pool1 = tf.nn.max_pool(conv1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='VALID', name='pool1')
-    # print("pool1 tensor: ", pool1)
-
-    # # conv2
-    # with tf.variable_scope('conv2') as scope:
-    #     kernel = weight_variable(shape=[5, 5, 32, 48])
-    #     conv = tf.nn.conv2d(pool1, kernel, strides=[1, 1, 1, 1], padding='SAME')
-    #     biases = bias_variable(shape=[48], w=0.1)
-    #     pre_activation = tf.nn.bias_add(conv, biases)
-    #     conv2 = tf.nn.elu(pre_activation, name=scope.name)
-    # print("conv2 tensor: ", conv2)
-    # # # norm2
-    # # norm2 = tf.nn.lrn(conv2, depth_radius=4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm2')
-    # # print("norm2 tensor: ", norm2)
-    # # pool2
-    # pool2 = tf.nn.max_pool(conv2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='VALID', name='pool2')
-    # print("pool2 tensor: ", pool2) 
-    
-    # #conv3
-    # with tf.variable_scope('conv3') as scope:
-    #     kernel = weight_variable(shape=[3, 3, 48, 64])
-    #     conv = tf.nn.conv2d(pool2, kernel, strides=[1, 1, 1, 1], padding='SAME')
-    #     biases = bias_variable(shape=[64], w=0.1)
-    #     pre_activation = tf.nn.bias_add(conv, biases)
-    #     conv3 = tf.nn.elu(pre_activation, name=scope.name)
-    # print("conv3 tensor: ", conv3)
-
-    # #conv4
-    # with tf.variable_scope('conv4') as scope:
-    #     kernel = weight_variable(shape=[3, 3, 64, 64])
-    #     conv = tf.nn.conv2d(conv3, kernel, strides=[1, 1, 1, 1], padding='SAME')
-    #     biases = bias_variable(shape=[64], w=0.1)
-    #     pre_activation = tf.nn.bias_add(conv, biases)
-    #     conv4 = tf.nn.elu(pre_activation, name=scope.name)
-    # print("conv4 tensor: ", conv4)
-
-    # #conv5
-    # with tf.variable_scope('conv5') as scope:
-    #     kernel = weight_variable(shape=[3, 3, 64, 48])
-    #     conv = tf.nn.conv2d(conv4, kernel, strides=[1, 1, 1, 1], padding='SAME')
-    #     biases = bias_variable(shape=[48], w=0.1)
-    #     pre_activation = tf.nn.bias_add(conv, biases)
-    #     conv5 = tf.nn.elu(pre_activation, name=scope.name)
-    # print("conv5 tensor: ", conv5)
-
-    # # pool3
-    # pool3 = tf.nn.max_pool(conv5, ksize=[1, 2, 2, 1],
-    #                      strides=[1, 2, 2, 1], padding='VALID', name='pool3')
-    # print("pool3 tensor: ", pool3)
-
-    # # flatten
-    # pool3_flat = tf.reshape(pool3, [-1, 4*4*48])
+    pool2 = tf.nn.max_pool(conv2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='VALID', name='pool2')
+    print("pool2 tensor: ", pool2)
+    # conv3
+    conv3 = Conv2d_BN('conv3', pool2, 3, 256, 384, 1, 'SAME', tf.nn.relu)
+    print("conv3 tensor: ", conv3)
+    # conv4
+    conv4 = Conv2d_BN('conv4', conv3, 3, 384, 384, 1, 'SAME', tf.nn.relu)
+    print("conv4 tensor: ", conv4)
+    # conv5
+    conv5 = Conv2d_BN('conv5', conv4, 3, 384, 256, 1, 'SAME', tf.nn.relu)
+    print("conv5 tensor: ", conv5)
+    # pool3
+    pool3 = tf.nn.max_pool(conv5, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='VALID', name='pool3')
+    print("pool3 tensor: ", pool3)
+    # flatten
+    pool3_flat = tf.reshape(pool3, [-1, 1*1*256])
 
     dense1 = tf.layers.dense(
-        inputs=pool2_flat,
-        units=1024, # number of neurons in the dense layer
-        activation=tf.nn.elu,
+        inputs=pool3_flat,
+        units=128, # number of neurons in the dense layer
+        activation=tf.nn.relu,
         name='dense1')
     dropout1 = tf.layers.dropout(
         inputs=dense1,
-        rate=0.1,
-        training= mode=='TRAIN',
+        rate=0.5,
+        training= train_mode,
         name='dropout1')
     dense2 = tf.layers.dense(
         inputs=dropout1,
-        units=1024, # number of neurons in the dense layer
-        activation=tf.nn.elu,
+        units=128, # number of neurons in the dense layer
+        activation=tf.nn.relu,
         name='dense2')
     dropout2 = tf.layers.dropout(
         inputs=dense2,
-        rate=0.1,
-        training= mode=='TRAIN',
+        rate=0.5,
+        training= train_mode,
         name='dropout2')
 
     # Logits Layer
@@ -182,11 +145,11 @@ def train(X_train, y_train, X_validate, y_validate, train_op, epoch_bound, stop_
             if batch == total_batches - 1:
                 sess.run(train_op, feed_dict={x: X_train[batch*batch_size:], 
                                                y: y_train[batch*batch_size:], 
-                                               mode:'TRAIN'})
+                                               train_mode: True})
             else:
                 sess.run(train_op, feed_dict={x: X_train[batch*batch_size : (batch+1)*batch_size], 
                                                y: y_train[batch*batch_size : (batch+1)*batch_size], 
-                                               mode:'TRAIN'})
+                                               train_mode: True})
         # split validation set into multiple mini-batches and start validating
         cur_loss = 0.0
         cur_accuracy = 0.0
@@ -195,17 +158,17 @@ def train(X_train, y_train, X_validate, y_validate, train_op, epoch_bound, stop_
             if batch == total_batches - 1:
                 cur_loss += sess.run(loss, feed_dict={x:X_validate[batch*batch_size:]
                                                            , y:y_validate[batch*batch_size:]
-                                                           , mode:'EVAL'})
+                                                           , train_mode: False})
                 cur_accuracy += sess.run(accuracy, feed_dict={x:X_validate[batch*batch_size:]
                                                            , y:y_validate[batch*batch_size:]
-                                                           , mode:'EVAL'})
+                                                           , train_mode: False})
             else:
                 cur_loss += sess.run(loss, feed_dict={x:X_validate[batch*batch_size : (batch+1)*batch_size]
                                                            , y:y_validate[batch*batch_size : (batch+1)*batch_size]
-                                                           , mode:'EVAL'})
+                                                           , train_mode: False})
                 cur_accuracy += sess.run(accuracy, feed_dict={x:X_validate[batch*batch_size:]
                                                            , y:y_validate[batch*batch_size:]
-                                                           , mode:'EVAL'})
+                                                           , train_mode: False})
         cur_loss /= total_batches
         cur_accuracy /= total_batches
 
@@ -251,9 +214,18 @@ def split_folds(indices, Inputs, Labels, cross_validation, fold):
 #         The image is stored in row-major order, so that the first 32 entries of the array are the red channel values of the first row of the image.
 # labels -- a list of 10000 numbers in the range 0-99. The number at index i indicates the label of the ith image in the array data.
 
-(train_data, train_labels), (eval_data, eval_labels) = get_data.load_data(path='./Data/cifar-100/')
+# load cifar data
+# (train_data, train_labels), (eval_data, eval_labels) = get_data.load_data(path='./Data/cifar-100/')
+# train_data = train_data.reshape(train_data.shape[0], 32*32*3)
+# eval_data = eval_data.reshape(eval_data.shape[0], 32*32*3)
+
+# load cifar data and data augmentation
+(train_data, train_labels), (eval_data, eval_labels) = data_augmentation.generate()
 train_data = train_data.reshape(train_data.shape[0], 32*32*3)
 eval_data = eval_data.reshape(eval_data.shape[0], 32*32*3)
+
+# data augmentation
+
 
 # normalize inputs from 0-255 to 0.0-1.0
 train_data = train_data / 255.0
@@ -268,9 +240,9 @@ print('Train Label shape: ', train_labels.shape)
 ########## CNN classifier ##########
 x = tf.placeholder(tf.float32, [None, train_data.shape[1]], name='x')
 y = tf.placeholder(tf.int32, [None], name='y')
-mode = tf.placeholder(tf.string, name='mode')
+train_mode = tf.placeholder(tf.bool, name='train_mode')
 
-logits = cnn_model(x, y, mode)
+logits = cnn_model(x, y, train_mode)
 
 # Calculate Loss (for both TRAIN and EVAL modes)
 onehot_labels = tf.one_hot(indices=tf.cast(y, tf.int32), depth=100)
@@ -279,7 +251,7 @@ loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=onehot_labe
 # Training iteration (for TRAIN)
 ## Decaying learning rate exponentially based on the total training step
 decay_steps = int(BATCH_SIZE * EPOCH_PER_DECAY) # Define decay steps
-global_step = tf.contrib.framework.get_or_create_global_step()
+global_step = tf.train.get_or_create_global_step()
 
 learning_rate = tf.train.exponential_decay(
         learning_rate=0.01, #initial learning rate
@@ -386,7 +358,7 @@ saver.restore(sess, "./saved_model/cifar-100.ckpt")
 
 testing_accuracy = 0.0
 for i in range(5):
-    testing_accuracy += sess.run(accuracy, feed_dict={x:eval_data[i*2000:(i+1)*2000], y:eval_labels[i*2000:(i+1)*2000], mode:'EVAL'})
+    testing_accuracy += sess.run(accuracy, feed_dict={x:eval_data[i*2000:(i+1)*2000], y:eval_labels[i*2000:(i+1)*2000], train_mode: False})
 
 print('Test accuracy: ', testing_accuracy/5)
 sess.close()

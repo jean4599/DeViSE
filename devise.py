@@ -325,75 +325,75 @@ train_op = optimizer.minimize(loss=loss, var_list = training_vars, name="train_o
 ########## devise classifier ##########
 
 ########## Train ##########
-print("########## Start training ##########")
-sess = tf.Session()
-init = tf.global_variables_initializer()
-# init saver to save model
-saver = tf.train.Saver()
-# visualize data
-merged = tf.summary.merge_all()
-writer = tf.summary.FileWriter("logs/", sess.graph)
+# print("########## Start training ##########")
+# sess = tf.Session()
+# init = tf.global_variables_initializer()
+# # init saver to save model
+# saver = tf.train.Saver()
+# # visualize data
+# merged = tf.summary.merge_all()
+# writer = tf.summary.FileWriter("logs/", sess.graph)
 
-# init weights
-sess.run(init)
-# restore value from pretrained model
-pretrained_saver.restore = (sess, pretrained_model_path + ".ckpt")
-for var in training_vars:
-    sess.run(var.initializer)
-# randomize dataset
-indices = np.random.permutation(train_data.shape[0])
-# start cross validation
-avg_loss = 0.0
+# # init weights
+# sess.run(init)
+# # restore value from pretrained model
+# pretrained_saver.restore = (sess, pretrained_model_path + ".ckpt")
+# for var in training_vars:
+#     sess.run(var.initializer)
+# # randomize dataset
+# indices = np.random.permutation(train_data.shape[0])
+# # start cross validation
+# avg_loss = 0.0
 
-if TAKE_CROSS_VALIDATION == True:
-    for fold in range(1, CROSS_VALIDATION+1):
-        print("########## Fold:", fold, "##########")
-        if os.path.exists(STORED_PATH+".meta") == True:
-            # restore the precious best model
-            saver.restore(sess, STORED_PATH)
-        else:
-            # init weights
-            sess.run(init)
+# if TAKE_CROSS_VALIDATION == True:
+#     for fold in range(1, CROSS_VALIDATION+1):
+#         print("########## Fold:", fold, "##########")
+#         if os.path.exists(STORED_PATH+".meta") == True:
+#             # restore the precious best model
+#             saver.restore(sess, STORED_PATH)
+#         else:
+#             # init weights
+#             sess.run(init)
             
-        # split inputs into training set and validation set for each fold
-        X_train, y_train, X_validate, y_validate = split_folds(indices, train_data, train_labels_embeddings, CROSS_VALIDATION, fold)
-        print('validate data: ', X_validate.shape)
-        print('validate label: ', y_validate.shape)
-        print('train data: ', X_train.shape)
-        print('train label: ', y_train.shape)
+#         # split inputs into training set and validation set for each fold
+#         X_train, y_train, X_validate, y_validate = split_folds(indices, train_data, train_labels_embeddings, CROSS_VALIDATION, fold)
+#         print('validate data: ', X_validate.shape)
+#         print('validate label: ', y_validate.shape)
+#         print('train data: ', X_train.shape)
+#         print('train label: ', y_train.shape)
 
-        best_loss = train(X_train, y_train, X_validate, y_validate
-                                , train_op, EPOCH_BOUND, EARLY_STOP_CHECK_EPOCH, BATCH_SIZE, testing=False)
-        avg_loss += best_loss
-        print("Loss:", best_loss)
-    avg_loss /= cross_validation
-    print("Average loss of cross validation:", avg_loss)
+#         best_loss = train(X_train, y_train, X_validate, y_validate
+#                                 , train_op, EPOCH_BOUND, EARLY_STOP_CHECK_EPOCH, BATCH_SIZE, testing=False)
+#         avg_loss += best_loss
+#         print("Loss:", best_loss)
+#     avg_loss /= cross_validation
+#     print("Average loss of cross validation:", avg_loss)
 
 
-# if os.path.exists(STORED_PATH+".meta") == True:
-#     # restore the precious best model
-#     saver.restore(sess, STORED_PATH)
-# else:
-#     # init weights
-#     sess.run(init)
+# # if os.path.exists(STORED_PATH+".meta") == True:
+# #     # restore the precious best model
+# #     saver.restore(sess, STORED_PATH)
+# # else:
+# #     # init weights
+# #     sess.run(init)
     
-# randomize dataset
-indices = np.random.permutation(train_data.shape[0])
-Inputs, Labels = np.array(train_data[indices,:]), np.array(train_labels_embeddings[indices,:])
+# # randomize dataset
+# indices = np.random.permutation(train_data.shape[0])
+# Inputs, Labels = np.array(train_data[indices,:]), np.array(train_labels_embeddings[indices,:])
 
-# get validation set with the size of a batch for early-stop
-X_train, y_train = Inputs[VALIDATION_SIZE:], Labels[VALIDATION_SIZE:]
-X_validate, y_validate = Inputs[:VALIDATION_SIZE], Labels[:VALIDATION_SIZE]
+# # get validation set with the size of a batch for early-stop
+# X_train, y_train = Inputs[VALIDATION_SIZE:], Labels[VALIDATION_SIZE:]
+# X_validate, y_validate = Inputs[:VALIDATION_SIZE], Labels[:VALIDATION_SIZE]
 
-print('X_train[0]: ', X_train[0])
+# print('X_train[0]: ', X_train[0])
 
-# start training with all the inputs
-best_loss = train(X_train, y_train, X_validate, y_validate
-                        , train_op, EPOCH_BOUND, EARLY_STOP_CHECK_EPOCH, BATCH_SIZE, testing=True)
-print("training with all the inputs, loss:", best_loss)
+# # start training with all the inputs
+# best_loss = train(X_train, y_train, X_validate, y_validate
+#                         , train_op, EPOCH_BOUND, EARLY_STOP_CHECK_EPOCH, BATCH_SIZE, testing=True)
+# print("training with all the inputs, loss:", best_loss)
 
 
-sess.close()
+# sess.close()
 ########## Train ##########
 
 
