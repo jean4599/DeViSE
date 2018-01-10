@@ -19,6 +19,7 @@ EPOCH_BOUND = 1000
 EARLY_STOP_CHECK_EPOCH = 20
 TAKE_CROSS_VALIDATION = False
 CROSS_VALIDATION = 5
+EPOCH_PER_DECAY = 15
 ########## Hyperparameter ##########
 
 def weight_variable(shape, w=0.1):
@@ -224,12 +225,6 @@ def train(X_train, y_train, X_validate, y_validate, optimizer, epoch_bound, stop
 
     return winner_loss, winner_accuracy
 
-def unpickle(file):
-        import pickle
-        with open(file, 'rb') as fo:
-            dict = pickle.load(fo, encoding='bytes')
-            return dict # return dic keys: [b'filenames', b'batch_label', b'fine_labels', b'coarse_labels', b'data']
-
 # split dataset into training set and one validation set
 def split_folds(indices, Inputs, Labels, cross_validation, fold):
     n = Inputs.shape[0]
@@ -258,9 +253,7 @@ def split_folds(indices, Inputs, Labels, cross_validation, fold):
 
 (train_data, train_labels), (eval_data, eval_labels) = get_data.load_data(path='./Data/cifar-100/')
 train_data = train_data.reshape(train_data.shape[0], 32*32*3)
-train_labels = train_labels.reshape(train_labels.shape[0])
 eval_data = eval_data.reshape(eval_data.shape[0], 32*32*3)
-eval_labels = eval_labels.reshape(eval_labels.shape[0])
 
 # normalize inputs from 0-255 to 0.0-1.0
 train_data = train_data / 255.0
@@ -284,10 +277,26 @@ onehot_labels = tf.one_hot(indices=tf.cast(y, tf.int32), depth=100)
 loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=onehot_labels, logits=logits), name="loss")
 
 # Training iteration (for TRAIN)
-optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.001, name='GD_Optimizer')
-train_op = optimizer.minimize(
-            loss=loss,
-            global_step=tf.train.get_global_step(), name='train_op')
+## Decaying learning rate exponentially based on the total training step
+decay_steps = int(BATCH_SIZE * EPOCH_PER_DECAY) # Define decay steps
+global_step = tf.contrib.framework.get_or_create_global_step()
+
+learning_rate = tf.train.exponential_decay(
+        learning_rate=0.1, #initial learning rate
+        global_step=tf.train.get_global_step(),
+        decay_steps=global_step,
+        decay_rate=0.96,
+        staircase=True,
+        name='ExponentialDecayLearningRate'
+    )
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate, name='GD_Optimizer')
+grads = optimizer.compute_gradients(loss)
+apply_gradient_op = optimizer.apply_gradients(grads, global_step=tf.train.get_global_step())
+ema = tf.train.ExponentialMovingAverage(decay=0.9999)
+maintain_averages_op = ema.apply(tf.trainable_variables())
+
+with tf.control_dependencies([apply_gradient_op, maintain_averages_op]):
+      train_op = tf.no_op(name='train_op')
 
 # For prediction (for EVAL)
 probabilities = tf.nn.softmax(logits, name="softmax_tensor")
