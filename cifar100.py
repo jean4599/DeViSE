@@ -160,7 +160,7 @@ def cnn_model(features, labels, mode):
     
     return logits
 
-def train(X_train, y_train, X_validate, y_validate, optimizer, epoch_bound, stop_threshold, batch_size, testing=False):
+def train(X_train, y_train, X_validate, y_validate, train_op, epoch_bound, stop_threshold, batch_size, testing=False):
 
     global saver
     global predictions
@@ -180,11 +180,11 @@ def train(X_train, y_train, X_validate, y_validate, optimizer, epoch_bound, stop
         total_batches = int(X_train.shape[0] / batch_size)
         for batch in range(total_batches):
             if batch == total_batches - 1:
-                sess.run(optimizer, feed_dict={x: X_train[batch*batch_size:], 
+                sess.run(train_op, feed_dict={x: X_train[batch*batch_size:], 
                                                y: y_train[batch*batch_size:], 
                                                mode:'TRAIN'})
             else:
-                sess.run(optimizer, feed_dict={x: X_train[batch*batch_size : (batch+1)*batch_size], 
+                sess.run(train_op, feed_dict={x: X_train[batch*batch_size : (batch+1)*batch_size], 
                                                y: y_train[batch*batch_size : (batch+1)*batch_size], 
                                                mode:'TRAIN'})
         # split validation set into multiple mini-batches and start validating
@@ -282,21 +282,20 @@ decay_steps = int(BATCH_SIZE * EPOCH_PER_DECAY) # Define decay steps
 global_step = tf.contrib.framework.get_or_create_global_step()
 
 learning_rate = tf.train.exponential_decay(
-        learning_rate=0.1, #initial learning rate
-        global_step=tf.train.get_global_step(),
-        decay_steps=global_step,
+        learning_rate=0.01, #initial learning rate
+        global_step=global_step,
+        decay_steps=decay_steps,
         decay_rate=0.96,
         staircase=True,
         name='ExponentialDecayLearningRate'
     )
 optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate, name='GD_Optimizer')
-grads = optimizer.compute_gradients(loss)
-apply_gradient_op = optimizer.apply_gradients(grads, global_step=tf.train.get_global_step())
+train_op = optimizer.minimize(loss, name='train_op')
+## exponential moving average
 ema = tf.train.ExponentialMovingAverage(decay=0.9999)
-maintain_averages_op = ema.apply(tf.trainable_variables())
 
-with tf.control_dependencies([apply_gradient_op, maintain_averages_op]):
-      train_op = tf.no_op(name='train_op')
+with tf.control_dependencies([train_op]):
+      train_op = ema.apply(tf.trainable_variables()) # apply exponential moving average to training operation
 
 # For prediction (for EVAL)
 probabilities = tf.nn.softmax(logits, name="softmax_tensor")
