@@ -34,7 +34,7 @@ img_channels = 3
 
 
 
-def load_batch(fpath, label_key='labels'):
+def load_batch(fpath):
   """Internal utility for parsing CIFAR data.
   Arguments:
       fpath: path the file to parse.
@@ -55,37 +55,45 @@ def load_batch(fpath, label_key='labels'):
     d = d_decoded
   f.close()
   data = d['data']
-  labels = d[label_key]
+  fine_labels = d['fine']
+  coarse_labels = d['coarse']
 
   data = data.reshape(data.shape[0], 3, 32, 32)
-  return data, labels
+  return data, fine_labels, coarse_labels
 
 
 def load_data(label_mode='fine', path='./Data/cifar-100'):
   """Loads CIFAR100 dataset.
   Arguments:
-      label_mode: one of "fine", "coarse".
+      Pata path.
   Returns:
-      Tuple of Numpy arrays: `(x_train, y_train), (x_test, y_test)`.
+      Tuple of Numpy arrays: `(x_train, y_train_fine_label, y_train_coarse_label), (x_test, y_test_fine_label, y_test_coarse_label)`.
   Raises:
       ValueError: in case of invalid `label_mode`.
   """
-  if label_mode not in ['fine', 'coarse']:
-    raise ValueError('label_mode must be one of "fine" "coarse".')
+  if label_mode not in ['fine', 'coarse', 'both']:
+    rase ValueError('label_mode must be one of "fine", "coarse", "both"')
 
   fpath = os.path.join(path, 'train')
-  x_train, y_train = load_batch(fpath, label_key=label_mode + '_labels')
+  x_train, y_train_fine_label, y_train_coarse_label = load_batch(fpath)
 
   fpath = os.path.join(path, 'test')
-  x_test, y_test = load_batch(fpath, label_key=label_mode + '_labels')
+  x_test, y_test_fine_label, y_test_coarse_label = load_batch(fpath)
 
-  y_train = np.reshape(y_train, (len(y_train)))
-  y_test = np.reshape(y_test, (len(y_test)))
+  y_train_fine_label = np.reshape(y_train_fine_label, (len(y_train_fine_label)))
+  y_train_coarse_label = np.reshape(y_train_coarse_label, (len(y_train_coarse_label)))
+  y_test_fine_label = np.reshape(y_test_fine_label, (len(y_test_fine_label)))
+  y_test_coarse_label = np.reshape(y_test_coarse_label, (len(y_test_coarse_label)))
 
   x_train = x_train.transpose(0, 2, 3, 1)
   x_test = x_test.transpose(0, 2, 3, 1)
 
-  return (x_train, y_train), (x_test, y_test)
+  if label_mode=='fine':
+    return  (x_train, y_train_fine_label), (x_test, y_test_fine_label)
+  elif label_mode=='coarse':
+    return (x_train, y_train_coarse_label), (x_test, y_test_coarse_label)
+  else:
+    return (x_train, y_train_fine_label, y_train_coarse_label), (x_test, y_test_fine_label, y_test_coarse_label)
 
 
 def unpickle(file):
