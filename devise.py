@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import tensorflow as tf
@@ -23,7 +23,7 @@ CROSS_VALIDATION = 5
 TEXT_EMBEDDING_SIZE = 300
 MARGIN = 0.1
 EPOCH_PER_DECAY = 10
-STORED_PATH = "./devise_model/devise.ckpt"
+STORED_PATH = "./saved_model/cifar100_simpleCNN_devise/devise.ckpt"
 ########## Hyperparameter ##########
 
 ########## load Word2Vec model ##########
@@ -34,11 +34,6 @@ STORED_PATH = "./devise_model/devise.ckpt"
 
 TextEmbeddings = Word2Vec_Model(word2vec_model_path="./Data/wiki.en.vec")
     
-
-
-# In[ ]:
-
-
 ########## load Word2Vec model ##########
 def reset_graph(seed=42):
     tf.reset_default_graph()
@@ -140,11 +135,10 @@ def devise_model(features, labels, train_mode):
     return visual_embeddings
 
 
-# In[ ]:
+# In[2]:
 
 
-def train(X_train, y_fine_train, y_coarse_train, yy_train, X_validate, y_fine_validate, y_coarse_validate, yy_validate
-                        , train_op, epoch_bound, stop_threshold, batch_size, testing=True):
+def train(X_train, y_train, yy_train, X_validate, y_validate, yy_validate, optimizer, epoch_bound, stop_threshold, batch_size, testing=False):
 
     global saver, loss
     global writer, merged
@@ -156,34 +150,30 @@ def train(X_train, y_fine_train, y_coarse_train, yy_train, X_validate, y_fine_va
 
         # randomize training set
         indices_training = np.random.permutation(X_train.shape[0])
-        X_train, y_fine_train, y_coarse_train = X_train[indices_training,:], y_fine_train[indices_training,:], y_coarse_train[indices_training,:]
+        X_train, y_train = X_train[indices_training,:], y_train[indices_training,:]
 
         # split training set into multiple mini-batches and start training        
         total_batches = int(X_train.shape[0] / batch_size)
         for batch in range(total_batches):
             if batch == total_batches - 1:
-                sess.run(train_op, feed_dict={x: X_train[batch*batch_size:], 
-                                               y1: y_coarse_train[batch*batch_size:],
-                                               y2: y_fine_train[batch*batch_size:],
+                sess.run(optimizer, feed_dict={x: X_train[batch*batch_size:], 
+                                               y: y_train[batch*batch_size:],
                                                yy: yy_train[batch*batch_size:],
                                                train_mode: True})
                 summary = sess.run(merged, feed_dict={x: X_train[batch*batch_size:],
-                                                      y1: y_coarse_train[batch*batch_size:],
-                                                      y2: y_fine_train[batch*batch_size:],
+                                                      y: y_train[batch*batch_size:],
                                                       yy: yy_train[batch*batch_size:],
                                                       train_mode: True})
                 writer.add_summary(summary, epoch + (batch/total_batches))
 
 
             else:
-                sess.run(train_op, feed_dict={x: X_train[batch*batch_size : (batch+1)*batch_size], 
-                                               y1: y_coarse_train[batch*batch_size : (batch+1)*batch_size],
-                                               y2: y_fine_train[batch*batch_size : (batch+1)*batch_size],
+                sess.run(optimizer, feed_dict={x: X_train[batch*batch_size : (batch+1)*batch_size], 
+                                               y: y_train[batch*batch_size : (batch+1)*batch_size], 
                                                yy: yy_train[batch*batch_size : (batch+1)*batch_size],
                                                train_mode: True})
                 summary = sess.run(merged, feed_dict={x: X_train[batch*batch_size : (batch+1)*batch_size],
-                                                      y1: y_coarse_train[batch*batch_size : (batch+1)*batch_size],
-                                                      y2: y_fine_train[batch*batch_size : (batch+1)*batch_size],
+                                                      y: y_train[batch*batch_size : (batch+1)*batch_size],
                                                       yy: yy_train[batch*batch_size : (batch+1)*batch_size],
                                                       train_mode: True})
                 writer.add_summary(summary, epoch + (batch/total_batches))
@@ -195,16 +185,14 @@ def train(X_train, y_fine_train, y_coarse_train, yy_train, X_validate, y_fine_va
             
             if batch == total_batches - 1:
                 cur_loss += sess.run(loss, feed_dict={x:X_validate[batch*batch_size:],
-                                                      y1:y_coarse_validate[batch*batch_size:],
-                                                      y2:y_fine_validate[batch*batch_size:],
-                                                      yy: yy_validate[batch*batch_size:],
-                                                      train_mode: False})
+                                                      y:y_validate[batch*batch_size:],
+                                                      yy:yy_validate[batch*batch_size:],
+                                                     train_mode: False})
             else:
                 cur_loss += sess.run(loss, feed_dict={x:X_validate[batch*batch_size : (batch+1)*batch_size],
-                                                      y1:y_coarse_validate[batch*batch_size : (batch+1)*batch_size],
-                                                      y2:y_fine_validate[batch*batch_size : (batch+1)*batch_size],
-                                                      yy: yy_validate[batch*batch_size : (batch+1)*batch_size],
-                                                      train_mode: False})
+                                                      y:y_validate[batch*batch_size : (batch+1)*batch_size],
+                                                      yy:yy_validate[batch*batch_size : (batch+1)*batch_size],
+                                                     train_mode: False})
         cur_loss /= total_batches
         
         # #test for prediction
@@ -232,102 +220,38 @@ def unpickle(file):
             dict = pickle.load(fo, encoding='bytes')
             return dict # return dic keys: [b'filenames', b'batch_label', b'fine_labels', b'coarse_labels', b'data']
         
-def labels_2_embeddings(labels_idx, ref):
-    """ Get text embeddings of labels from Text embedding lookup table
-        label(i) = ref[labels_idx[i]]
-    Argument: 
-        labels_idx : a list of indices that should refers to ref
-        ref: a list of labels
-    Return:
-        labels_embeddings: a list of text embeddings
-    """
-    global TextEmbeddings, TEXT_EMBEDDING_SIZE
+def labels_2_embeddings(labels):
+    
+    global TextEmbeddings, TEXT_EMBEDDING_SIZE, CLASSES
     
     labels_embeddings = []
-    for i in labels_idx:
-        labels_embeddings.append(TextEmbeddings.text_embedding_lookup(TEXT_EMBEDDING_SIZE, ref[i]))
+    for i in labels:
+        labels_embeddings.append(TextEmbeddings.text_embedding_lookup(TEXT_EMBEDDING_SIZE, CLASSES[i]))
     labels_embeddings = np.array(labels_embeddings, dtype=np.float32)
     
     return labels_embeddings
+    
 
-
-# In[ ]:
-
-
-def load_batch(fpath):
-    import sys
-    from six.moves import cPickle
-    """Internal utility for parsing CIFAR data.
-    Arguments:
-      fpath: path the file to parse.
-      label_key: key for label data in the retrieve
-          dictionary.
-    Returns:
-      A tuple `(data, labels)`.
-    """
-    f = open(fpath, 'rb')
-    if sys.version_info < (3,):
-        d = cPickle.load(f)
+# split dataset into training set and one validation set
+def split_folds(indices, Inputs, Labels, cross_validation, fold):
+    n = Inputs.shape[0]
+    if fold == cross_validation:
+        validation_size = n - (int(n/cross_validation) * (cross_validation-1))
+        X_train_idx, X_validate_idx = indices[:(n-validation_size)], indices[(n-validation_size):]
+        y_train_idx, y_validate_idx = indices[:(n-validation_size)], indices[(n-validation_size):]
     else:
-        d = cPickle.load(f, encoding='bytes')
-        # decode utf8
-        d_decoded = {}
-        for k, v in d.items():
-            d_decoded[k.decode('utf8')] = v
-        d = d_decoded
-    f.close()
-    data = d['data']
-    fine_labels = d['fine_labels']
-    coarse_labels = d['coarse_labels']
-
-    data = data.reshape(data.shape[0], 3, 32, 32)
-    return data, fine_labels, coarse_labels
+        validation_size = int(n/cross_validation)
+        X_train_idx, X_validate_idx = np.concatenate((indices[:validation_size*(fold-1)], indices[validation_size*fold:]), axis=0), indices[(validation_size*(fold-1)):(validation_size*fold)]
+        y_train_idx, y_validate_idx = np.concatenate((indices[:validation_size*(fold-1)], indices[validation_size*fold:]), axis=0), indices[(validation_size*(fold-1)):(validation_size*fold)]
+    X_train, X_validate = np.array(Inputs[X_train_idx,:]), np.array(Inputs[X_validate_idx,:])
+    y_train, y_validate = np.array(Labels[y_train_idx,:]), np.array(Labels[y_validate_idx,:])
+    return X_train, y_train, X_validate, y_validate
 
 
-def load_data(label_mode='fine', path='./Data/cifar-100'):
-    """Loads CIFAR100 dataset.
-    Arguments:
-      Pata path.
-    Returns:
-      Tuple of Numpy arrays: `(x_train, y_train_fine_label, y_train_coarse_label), (x_test, y_test_fine_label, y_test_coarse_label)`.
-    Raises:
-      ValueError: in case of invalid `label_mode`.
-    """
-    if label_mode not in ['fine', 'coarse', 'both']:
-        raise ValueError('label_mode must be one of "fine", "coarse", "both"')
-
-    fpath = os.path.join(path, 'train')
-    x_train, y_train_fine_label, y_train_coarse_label = load_batch(fpath)
-
-    fpath = os.path.join(path, 'test')
-    x_test, y_test_fine_label, y_test_coarse_label = load_batch(fpath)
-
-    y_train_fine_label = np.reshape(y_train_fine_label, (len(y_train_fine_label)))
-    y_train_coarse_label = np.reshape(y_train_coarse_label, (len(y_train_coarse_label)))
-    y_test_fine_label = np.reshape(y_test_fine_label, (len(y_test_fine_label)))
-    y_test_coarse_label = np.reshape(y_test_coarse_label, (len(y_test_coarse_label)))
-
-    x_train = x_train.transpose(0, 2, 3, 1)
-    x_test = x_test.transpose(0, 2, 3, 1)
-
-    if label_mode=='fine':
-        return  (x_train, y_train_fine_label), (x_test, y_test_fine_label)
-    elif label_mode=='coarse':
-        return (x_train, y_train_coarse_label), (x_test, y_test_coarse_label)
-    else:
-        return (x_train, y_train_fine_label, y_train_coarse_label), (x_test, y_test_fine_label, y_test_coarse_label)
+# In[3]:
 
 
-def unpickle(file):
-    import pickle
-    with open(file, 'rb') as fo:
-        dict = pickle.load(fo, encoding='bytes')
-    return dict # return dic keys: [b'filenames', b'batch_label', b'fine_labels', b'coarse_labels', b'data']
-
-
-# In[ ]:
-
-
+import data_augmentation
 ########## Data ##########
 # Data format:
 # data -- a 10000x3072 numpy array of uint8s. 
@@ -338,7 +262,14 @@ def unpickle(file):
 # labels -- a list of 10000 numbers in the range 0-99. The number at index i indicates the label of the ith image in the array data.
 
 # Load training and testing data
-(train_data, y_train_fine_labels, y_train_coarse_labels), (eval_data, y_eval_fine_labels, y_eval_coarse_labels) = load_data(label_mode='both',path='./Data/cifar-100/')
+# (train_data, train_labels), (eval_data, eval_labels) = get_data.load_data(path='./Data/cifar-100/')
+# train_data = train_data.reshape(train_data.shape[0], 32*32*3)
+# train_labels = train_labels.reshape(train_labels.shape[0])
+# eval_data = eval_data.reshape(eval_data.shape[0], 32*32*3)
+# eval_labels = eval_labels.reshape(eval_labels.shape[0])
+
+# load cifar data and data augmentation
+(train_data, train_labels), (eval_data, eval_labels) = data_augmentation.generate()
 train_data = train_data.reshape(train_data.shape[0], 32*32*3)
 eval_data = eval_data.reshape(eval_data.shape[0], 32*32*3)
 
@@ -351,30 +282,21 @@ eval_data = eval_data / 255.0
 # fine_labels: 100 labels of classes
 # coarse_labels: 20 labels of super classes
 classes = unpickle('./Data/cifar-100/meta')
-FINE_CLASSES = np.asarray(classes[b'fine_label_names'], dtype=np.dtype(np.str))
-COARSE_CLASSES = np.asarray(classes[b'coarse_label_names'], dtype=np.dtype(np.str))
-COARSE_CLASSES[-1]='vehicles'
-COARSE_CLASSES[-2]='vehicles'
-COARSE_CLASSES[9]='large_outdoor_things'
-COARSE_CLASSES[-7]='invertebrates'
+fine_class = np.asarray(classes[b'fine_label_names'], dtype=np.dtype(np.str))
+course_class = np.asarray(classes[b'coarse_label_names'], dtype=np.dtype(np.str))
+CLASSES = fine_class
 
-print(COARSE_CLASSES)
-train_fine_labels_embeddings = labels_2_embeddings(y_train_fine_labels, FINE_CLASSES)
-train_coarse_labels_embeddings = labels_2_embeddings(y_train_coarse_labels, COARSE_CLASSES)
-
-eval_fine_labels_embeddings = labels_2_embeddings(y_eval_fine_labels, FINE_CLASSES)
-eval_coarse_labels_embeddings = labels_2_embeddings(y_eval_coarse_labels, COARSE_CLASSES)
-
-fine_classes_text_embedding = TextEmbeddings.get_classes_text_embedding(TEXT_EMBEDDING_SIZE, FINE_CLASSES)
-coarse_classes_text_embedding = TextEmbeddings.get_classes_text_embedding(TEXT_EMBEDDING_SIZE, COARSE_CLASSES)
+train_labels_embeddings = labels_2_embeddings(train_labels)
+eval_labels_embeddings = labels_2_embeddings(eval_labels)
+classes_text_embedding = TextEmbeddings.get_classes_text_embedding(TEXT_EMBEDDING_SIZE, CLASSES)
+# print('ScikitLearn Nearest Neighbors: ', Word2Vec_Model.train_nearest_neighbor(classes_text_embedding, num_nearest_neighbor=5))
 
 print('Train Data shape: ',train_data.shape)
-print('Train Fine Label shape: ', y_train_fine_labels.shape)
-print('Train Coarse Label shape:', y_train_coarse_labels.shape)
+print('Train Label shape: ', train_labels.shape)
 ########## Data ##########
 
 
-# In[ ]:
+# In[4]:
 
 
 ########## devise classifier ##########
@@ -389,18 +311,13 @@ reset_graph()
 pretrained_model_path = "./saved_model/cifar100_simpleCNN/cifar-100_simpleCNN"
 # Get graph from pretrained visual model
 pretrained_saver = tf.train.import_meta_graph(pretrained_model_path + ".ckpt.meta")
-#print(tf.get_default_graph().get_operations())
-
-# Get variables of cifar-100 cnn model
+# get variables of cifar-100 cnn model
 x = tf.get_default_graph().get_tensor_by_name("x:0")
+y = tf.placeholder(tf.float32, [None, train_labels_embeddings.shape[1]], name='y')
 yy = tf.get_default_graph().get_tensor_by_name("y:0")
 train_mode = tf.get_default_graph().get_tensor_by_name("train_mode:0")
+# print(tf.get_default_graph().get_operations())
 cnn_output = tf.get_default_graph().get_tensor_by_name("dropout1/cond/Merge:0")
-
-# Define new input label placeholder: y1 for super class labels, y2 for fine class labels
-y1 = tf.placeholder(tf.float32, [None, train_coarse_labels_embeddings.shape[1]], name='y1')
-y2 = tf.placeholder(tf.float32, [None, train_fine_labels_embeddings.shape[1]], name='y2')
-
 tf.summary.histogram('cnn_output', cnn_output)
 
 # attach transform layer
@@ -412,47 +329,19 @@ with tf.name_scope('transform'):
 training_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="transform")
 
 # Calculate Loss (for both TRAIN and EVAL modes)
-## Origine DeViSE defined hinge rank loss
-# with tf.name_scope('devise_loss'):
-#     loss = tf.constant(0.0)
-#     predic_true_distance = tf.reduce_sum(tf.multiply(y, visual_embeddings), axis=1, keep_dims=True)
-#     for j in range(len(classes_text_embedding)):
-#         loss = tf.add(loss, tf.maximum(0.0, (MARGIN - predic_true_distance 
-#                                     + tf.reduce_sum(tf.multiply(classes_text_embedding[j], visual_embeddings),axis=1, keep_dims=True))))
-#     loss = tf.subtract(loss, MARGIN)
-#     loss = tf.reduce_sum(loss)
-#     loss = tf.div(loss, BATCH_SIZE)
-#     tf.summary.scalar('loss', loss)
-
-## New loss: Hierachicical hinge rank loss
 with tf.name_scope('devise_loss'):
     loss = tf.constant(0.0)
-    
-    ### (H1) Coarse labels hinge rank loss
-    predic_true_distance = tf.reduce_sum(tf.multiply(y1, visual_embeddings), axis=1, keep_dims=True)
-    for j in range(len(coarse_classes_text_embedding)):
+    predic_true_distance = tf.reduce_sum(tf.multiply(y, visual_embeddings), axis=1, keep_dims=True)
+    for j in range(len(classes_text_embedding)):
         loss = tf.add(loss, tf.maximum(0.0, (MARGIN - predic_true_distance 
-                                    + tf.reduce_sum(tf.multiply(coarse_classes_text_embedding[j], visual_embeddings),axis=1, keep_dims=True))))
-    h1_loss = tf.subtract(loss, MARGIN)
-    h1_loss = tf.reduce_sum(loss)
-    h1_loss = tf.div(loss, BATCH_SIZE)
-    
-    ### (H2) Fine labels hinge rank loss
-    predic_true_distance = tf.reduce_sum(tf.multiply(y2, visual_embeddings), axis=1, keep_dims=True)
-    for j in range(len(fine_classes_text_embedding)):
-        loss = tf.add(loss, tf.maximum(0.0, (MARGIN - predic_true_distance 
-                                    + tf.reduce_sum(tf.multiply(fine_classes_text_embedding[j], visual_embeddings),axis=1, keep_dims=True))))
-    h2_loss = tf.subtract(loss, MARGIN)
-    h2_loss = tf.reduce_sum(loss)
-    h2_loss = tf.div(loss, BATCH_SIZE)
-    
-    ### loss = alpha*H1 + beta*H2
-    loss = 0.5*h1_loss + 0.5*h2_loss
-    
+                                    + tf.reduce_sum(tf.multiply(classes_text_embedding[j], visual_embeddings),axis=1, keep_dims=True))))
+    loss = tf.subtract(loss, MARGIN)
+    loss = tf.reduce_sum(loss)
+    loss = tf.div(loss, BATCH_SIZE)
     tf.summary.scalar('loss', loss)
-    
-print("loss defined")
 
+
+print("loss defined")
 # Define optimizer and Training iteration (for TRAIN)
 ## Decaying learning rate exponentially based on the total training step
 
@@ -470,15 +359,14 @@ learning_rate = tf.train.exponential_decay(
 optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate, name='GD_Optimizer')
 train_op = optimizer.minimize(loss, name='train_op', var_list=training_vars)
 # ## exponential moving average
-# ema = tf.train.ExponentialMovingAverage(decay=0.9999)
+ema = tf.train.ExponentialMovingAverage(decay=0.9999)
 
-# with tf.control_dependencies([train_op]):
-#       train_op = ema.apply(training_vars) # apply exponential moving average to training operation
-
+with tf.control_dependencies([train_op]):
+      train_op = ema.apply(training_vars) # apply exponential moving average to training operation
 ########## devise classifier ##########
 
 
-# In[ ]:
+# In[5]:
 
 
 ########## Train ##########
@@ -497,17 +385,43 @@ sess.run(init)
 pretrained_saver.restore = (sess, pretrained_model_path + ".ckpt")
 for var in training_vars:
     sess.run(var.initializer)
+# randomize dataset
+indices = np.random.permutation(train_data.shape[0])
+# start cross validation
+avg_loss = 0.0
+
+if TAKE_CROSS_VALIDATION == True:
+    for fold in range(1, CROSS_VALIDATION+1):
+        print("########## Fold:", fold, "##########")
+        if os.path.exists(STORED_PATH+".meta") == True:
+            # restore the precious best model
+            saver.restore(sess, STORED_PATH)
+        else:
+            # init weights
+            sess.run(init)
+            
+        # split inputs into training set and validation set for each fold
+        X_train, y_train, X_validate, y_validate = split_folds(indices, train_data, train_labels_embeddings, CROSS_VALIDATION, fold)
+        print('validate data: ', X_validate.shape)
+        print('validate label: ', y_validate.shape)
+        print('train data: ', X_train.shape)
+        print('train label: ', y_train.shape)
+
+        best_loss = train(X_train, y_train, X_validate, y_validate
+                                , train_op, EPOCH_BOUND, EARLY_STOP_CHECK_EPOCH, BATCH_SIZE, testing=False)
+        avg_loss += best_loss
+        print("Loss:", best_loss)
+    avg_loss /= cross_validation
+    print("Average loss of cross validation:", avg_loss)
     
 # randomize dataset
 indices = np.random.permutation(train_data.shape[0])
-Inputs = np.array(train_data[indices,:])
-Fine_Labels = np.array(train_fine_labels_embeddings[indices,:])
-Coarse_Labels = np.array(train_coarse_labels_embeddings[indices,:])
+Inputs, Labels = np.array(train_data[indices,:]), np.array(train_labels_embeddings[indices,:])
 yy_Labels = np.array(train_labels[indices])
 
 # get validation set with the size of a batch for early-stop
-X_train, y_fine_train, y_coarse_train = Inputs[VALIDATION_SIZE:], Fine_Labels[VALIDATION_SIZE:], Coarse_Labels[VALIDATION_SIZE:]
-X_validate, y_fine_validate, y_coarse_validate = Inputs[:VALIDATION_SIZE], Fine_Labels[:VALIDATION_SIZE], Coarse_Labels[:VALIDATION_SIZE]
+X_train, y_train = Inputs[VALIDATION_SIZE:], Labels[VALIDATION_SIZE:]
+X_validate, y_validate = Inputs[:VALIDATION_SIZE], Labels[:VALIDATION_SIZE]
 
 yy_train = yy_Labels[VALIDATION_SIZE:]
 yy_validation = yy_Labels[:VALIDATION_SIZE]
@@ -515,15 +429,16 @@ yy_validation = yy_Labels[:VALIDATION_SIZE]
 print('X_train[0]: ', X_train[0])
 
 # start training with all the inputs
-best_loss = train(X_train, y_fine_train, y_coarse_train, yy_train, X_validate, y_fine_validate, y_coarse_validate
-                        , train_op, yy_validation, EPOCH_BOUND, EARLY_STOP_CHECK_EPOCH, BATCH_SIZE, testing=True)
+best_loss = train(X_train, y_train, yy_train, X_validate, y_validate, yy_validation,
+                        train_op, EPOCH_BOUND, EARLY_STOP_CHECK_EPOCH, BATCH_SIZE, testing=True)
 print("training with all the inputs, loss:", best_loss)
+
 
 sess.close()
 ########## Train ##########
 
 
-# In[ ]:
+# In[6]:
 
 
 ########## Evaluate ##########
@@ -539,13 +454,12 @@ top3_hit = 0.0
 top5_hit = 0.0
 for i in range(10):
     predict_embeddings = sess.run(visual_embeddings, feed_dict={x:eval_data[i*1000:(i+1)*1000],
-                                                                y1:eval_coarse_labels_embeddings[i*1000:(i+1)*1000],
-                                                                y2:eval_fine_labels_embeddings[i*1000:(i+1)*1000],
+                                                                y:eval_labels_embeddings[i*1000:(i+1)*1000],
                                                                 yy: eval_labels[i*1000:(i+1)*1000],
                                                                 train_mode: False})
     predict_batch_labels = TextEmbeddings.get_nearest_neighbor_labels(predict_embeddings, 1)
     for idx, predict_labels in enumerate(predict_batch_labels):
-        long_true_label = CLASSES[eval_labels[idx]] # refer to class labels       
+        long_true_label = CLASSES[eval_labels[idx]] # refer to class labels        
         # consider a class name is concated by multiple labels (ex., maple_tree)
         true_labels = long_true_label.split('_')
         for true in true_labels:
@@ -554,7 +468,7 @@ for i in range(10):
                 print("top1 HIT!")
     predict_batch_labels = TextEmbeddings.get_nearest_neighbor_labels(predict_embeddings, 3)
     for idx, predict_labels in enumerate(predict_batch_labels):
-        long_true_label = CLASSES[eval_labels[idx]] # refer to class labels      
+        long_true_label = CLASSES[eval_labels[idx]] # refer to class labels        
         # consider a class name is concated by multiple labels (ex., maple_tree)
         true_labels = long_true_label.split('_')
         for true in true_labels:
