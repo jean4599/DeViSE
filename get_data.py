@@ -55,8 +55,8 @@ def load_batch(fpath):
     d = d_decoded
   f.close()
   data = d['data']
-  fine_labels = d['fine']
-  coarse_labels = d['coarse']
+  fine_labels = d['fine_labels']
+  coarse_labels = d['coarse_labels']
 
   data = data.reshape(data.shape[0], 3, 32, 32)
   return data, fine_labels, coarse_labels
@@ -72,7 +72,7 @@ def load_data(label_mode='fine', path='./Data/cifar-100'):
       ValueError: in case of invalid `label_mode`.
   """
   if label_mode not in ['fine', 'coarse', 'both']:
-    rase ValueError('label_mode must be one of "fine", "coarse", "both"')
+    raise ValueError('label_mode must be one of "fine", "coarse", "both"')
 
   fpath = os.path.join(path, 'train')
   x_train, y_train_fine_label, y_train_coarse_label = load_batch(fpath)

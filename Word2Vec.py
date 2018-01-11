@@ -79,10 +79,10 @@ class Word2Vec_Model():
        
         return 'NearestNeighbors training finished!'
 
-    def get_nearest_neighbor_labels(self, embeddings):
+    def get_nearest_neighbor_labels(self, embeddings, top_num):
         nn_labels = []
         for vector in embeddings:
-            neighbors = self.model.similar_by_vector(vector, topn=5) # neighbors = [('label1', #similarity1),('label2', #similarity2),...]
+            neighbors = self.model.similar_by_vector(vector, topn=top_num) # neighbors = [('label1', #similarity1),('label2', #similarity2),...]
             neighbors_labels = list(dict(neighbors).keys())
             nn_labels.append(neighbors_labels)
         

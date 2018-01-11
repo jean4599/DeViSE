@@ -163,7 +163,8 @@ def train(X_train, y_train, X_validate, y_validate, train_op, epoch_bound, stop_
 
     global saver
     global predictions
-    global loss, accuracy
+    global loss, accuracy_top1
+    global writer, merged
     
     early_stop = 0
     winner_loss = np.infty
@@ -182,10 +183,18 @@ def train(X_train, y_train, X_validate, y_validate, train_op, epoch_bound, stop_
                 sess.run(train_op, feed_dict={x: X_train[batch*batch_size:], 
                                                y: y_train[batch*batch_size:], 
                                                train_mode: True})
+                summary = sess.run(merged, feed_dict={x: X_train[batch*batch_size:],
+                                                      y: y_train[batch*batch_size:],
+                                                      train_mode: True})
+                writer.add_summary(summary, epoch + (batch/total_batches))
             else:
                 sess.run(train_op, feed_dict={x: X_train[batch*batch_size : (batch+1)*batch_size], 
                                                y: y_train[batch*batch_size : (batch+1)*batch_size], 
                                                train_mode: True})
+                summary = sess.run(merged, feed_dict={x: X_train[batch*batch_size : (batch+1)*batch_size],
+                                                      y: y_train[batch*batch_size : (batch+1)*batch_size],
+                                                      train_mode: True})
+                writer.add_summary(summary, epoch + (batch/total_batches))
         # split validation set into multiple mini-batches and start validating
         cur_loss = 0.0
         cur_accuracy = 0.0
@@ -195,14 +204,14 @@ def train(X_train, y_train, X_validate, y_validate, train_op, epoch_bound, stop_
                 cur_loss += sess.run(loss, feed_dict={x:X_validate[batch*batch_size:]
                                                            , y:y_validate[batch*batch_size:]
                                                            , train_mode: False})
-                cur_accuracy += sess.run(accuracy, feed_dict={x:X_validate[batch*batch_size:]
+                cur_accuracy += sess.run(accuracy_top1, feed_dict={x:X_validate[batch*batch_size:]
                                                            , y:y_validate[batch*batch_size:]
                                                            , train_mode: False})
             else:
                 cur_loss += sess.run(loss, feed_dict={x:X_validate[batch*batch_size : (batch+1)*batch_size]
                                                            , y:y_validate[batch*batch_size : (batch+1)*batch_size]
                                                            , train_mode: False})
-                cur_accuracy += sess.run(accuracy, feed_dict={x:X_validate[batch*batch_size:]
+                cur_accuracy += sess.run(accuracy_top1, feed_dict={x:X_validate[batch*batch_size:]
                                                            , y:y_validate[batch*batch_size:]
                                                            , train_mode: False})
         cur_loss /= total_batches
@@ -215,7 +224,7 @@ def train(X_train, y_train, X_validate, y_validate, train_op, epoch_bound, stop_
             winner_accuracy = cur_accuracy
             # save best model in testing phase
             if testing == True:
-                save_path = saver.save(sess, "./saved_model/cifar-100.ckpt")
+                save_path = saver.save(sess, "./saved_model/cifar100_VGG/cifar-100_VGG.ckpt")
         else:
             early_stop += 1
         print('\tEpoch: ', epoch, '\tBest loss: ', winner_loss, '\tLoss: ', cur_loss, '\tAccuracy: ', cur_accuracy)
@@ -283,6 +292,7 @@ logits = cnn_model(x, y, train_mode)
 # Calculate Loss (for both TRAIN and EVAL modes)
 onehot_labels = tf.one_hot(indices=tf.cast(y, tf.int32), depth=100)
 loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=onehot_labels, logits=logits), name="loss")
+tf.summary.scalar('loss', loss)
 
 # Training iteration (for TRAIN)
 ## Decaying learning rate exponentially based on the total training step
@@ -316,8 +326,9 @@ predictions = {
 }
 
 # Calculate Accuracy
-correct_prediction = tf.equal(y, tf.argmax(probabilities,1,output_type=tf.int32))
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name="accuracy")
+accuracy_top1 = tf.reduce_mean(tf.cast(tf.nn.in_top_k(predictions=probabilities, targets=y, k=1), tf.float32), name="accuracy_top1")
+accuracy_top3 = tf.reduce_mean(tf.cast(tf.nn.in_top_k(predictions=probabilities, targets=y, k=3), tf.float32), name="accuracy_top3")
+accuracy_top5 = tf.reduce_mean(tf.cast(tf.nn.in_top_k(predictions=probabilities, targets=y, k=5), tf.float32), name="accuracy_top5")
 ########## CNN classifier ##########
 
 ########## Train ##########
@@ -326,7 +337,10 @@ sess = tf.Session()
 init = tf.global_variables_initializer()
 # init saver to save model
 saver = tf.train.Saver()
-writer = tf.summary.FileWriter("logs/", sess.graph)
+
+# visualize data
+merged = tf.summary.merge_all()
+writer = tf.summary.FileWriter("logs/cifar100_VGG", sess.graph)
 
 # randomize dataset
 indices = np.random.permutation(train_data.shape[0])
@@ -340,7 +354,7 @@ if TAKE_CROSS_VALIDATION == True:
         # init weights
         sess.run(init)
         # restore the precious best model
-        saver.restore(sess, "./saved_model/cifar-100.ckpt")
+        saver.restore(sess, "./saved_model/cifar100_VGG/cifar-100_VGG.ckpt")
         # split inputs into training set and validation set for each fold
         X_train, y_train, X_validate, y_validate = split_folds(indices, train_data, train_labels, CROSS_VALIDATION, fold)
         print('validate data: ', X_validate.shape)
@@ -357,13 +371,7 @@ if TAKE_CROSS_VALIDATION == True:
 
 # init weights
 sess.run(init)
-# restore the precious best model
-# if os.path.exists("./saved_model/cifar-100.ckpt.meta") == True:
-#     print("restore the precious best model")
-#     saver.restore(sess, "./saved_model/cifar-100.ckpt")
-# else:
-#     # init weights
-#     sess.run(init)
+
 # randomize dataset
 indices = np.random.permutation(train_data.shape[0])
 Inputs, Labels = np.array(train_data[indices,:]), np.array(train_labels[indices])
@@ -390,13 +398,17 @@ sess.close()
 print("########## Start evaluating ##########")
 sess = tf.Session()
 # restore the precious best model
-saver.restore(sess, "./saved_model/cifar-100.ckpt")
+saver.restore(sess, "./saved_model/cifar100_VGG/cifar-100_VGG.ckpt")
 
-testing_accuracy = 0.0
+testing_accuracy_top1 = 0.0
+testing_accuracy_top3 = 0.0
+testing_accuracy_top5 = 0.0
 for i in range(5):
-    testing_accuracy += sess.run(accuracy, feed_dict={x:eval_data[i*2000:(i+1)*2000], y:eval_labels[i*2000:(i+1)*2000], train_mode: False})
+    testing_accuracy_top1 += sess.run(accuracy_top1, feed_dict={x:eval_data[i*2000:(i+1)*2000], y:eval_labels[i*2000:(i+1)*2000], train_mode: False})
+    testing_accuracy_top3 += sess.run(accuracy_top3, feed_dict={x:eval_data[i*2000:(i+1)*2000], y:eval_labels[i*2000:(i+1)*2000], train_mode: False})
+    testing_accuracy_top5 += sess.run(accuracy_top5, feed_dict={x:eval_data[i*2000:(i+1)*2000], y:eval_labels[i*2000:(i+1)*2000], train_mode: False})
 
-print('Test accuracy: ', testing_accuracy/5)
+print('Test Top-1 Accuracy: ', testing_accuracy_top1/5, 'Test Top-3 Accuracy: ', testing_accuracy_top3/5, 'Test Top-5 Accuracy: ', testing_accuracy_top5/5)
 sess.close()
 ########## Evaluate ##########
 
