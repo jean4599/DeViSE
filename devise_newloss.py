@@ -483,7 +483,7 @@ with tf.control_dependencies([train_op]):
 ########## devise classifier ##########
 
 
-# In[ ]:
+# In[13]:
 
 
 ########## Train ##########
@@ -529,7 +529,7 @@ sess.close()
 ########## Train ##########
 
 
-# In[ ]:
+# In[16]:
 
 
 ########## Evaluate ##########
@@ -551,7 +551,7 @@ for i in range(10):
                                                                 train_mode: False})
     predict_batch_labels = TextEmbeddings.get_nearest_neighbor_labels(predict_embeddings, 1)
     for idx, predict_labels in enumerate(predict_batch_labels):
-        long_true_label = CLASSES[eval_labels[idx]] # refer to class labels       
+        long_true_label = FINE_CLASSES[y_eval_fine_labels[idx]] # refer to class labels       
         # consider a class name is concated by multiple labels (ex., maple_tree)
         true_labels = long_true_label.split('_')
         for true in true_labels:
@@ -560,7 +560,7 @@ for i in range(10):
                 print("top1 HIT!")
     predict_batch_labels = TextEmbeddings.get_nearest_neighbor_labels(predict_embeddings, 3)
     for idx, predict_labels in enumerate(predict_batch_labels):
-        long_true_label = CLASSES[eval_labels[idx]] # refer to class labels      
+        long_true_label = FINE_CLASSES[y_eval_fine_labels[idx]] # refer to class labels      
         # consider a class name is concated by multiple labels (ex., maple_tree)
         true_labels = long_true_label.split('_')
         for true in true_labels:
@@ -569,7 +569,7 @@ for i in range(10):
                 print("top3 HIT!")
     predict_batch_labels = TextEmbeddings.get_nearest_neighbor_labels(predict_embeddings, 5)
     for idx, predict_labels in enumerate(predict_batch_labels):
-        long_true_label = CLASSES[eval_labels[idx]] # refer to class labels        
+        long_true_label = FINE_CLASSES[y_eval_fine_labels[idx]] # refer to class labels        
         # consider a class name is concated by multiple labels (ex., maple_tree)
         true_labels = long_true_label.split('_')
         for true in true_labels:
