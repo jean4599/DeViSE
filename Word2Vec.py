@@ -80,7 +80,7 @@ class Word2Vec_Model():
         return 'NearestNeighbors training finished!'
 
     def get_nearest_neighbor_labels_from_definedset(self, X, top_num):
-        indices = nearest_neighbor.kneighbors(X, top_num, return_distance=False)
+        indices = self.nearest_neighbor.kneighbors(X, top_num, return_distance=False)
         return (indices)
 
     def get_nearest_neighbor_labels(self, embeddings, top_num):
