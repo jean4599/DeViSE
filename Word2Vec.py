@@ -20,7 +20,7 @@ class Word2Vec_Model():
         
         if(word2vec_model_path!=''): ## if model path is given then load the existing model
             print("##### loading word2vec model #####")
-            self.model = KeyedVectors.load_word2vec_format(self.word2vec_model_path, binary=False, limit=10000)
+            self.model = KeyedVectors.load_word2vec_format(self.word2vec_model_path, binary=False)
 
 
     def train_word2vec(self, inp, outp1, outp2):
