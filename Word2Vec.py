@@ -20,7 +20,7 @@ class Word2Vec_Model():
         
         if(word2vec_model_path!=''): ## if model path is given then load the existing model
             print("##### loading word2vec model #####")
-            self.model = KeyedVectors.load_word2vec_format(self.word2vec_model_path, binary=False)
+            self.model = KeyedVectors.load_word2vec_format(self.word2vec_model_path, binary=False, limit=10000)
 
 
     def train_word2vec(self, inp, outp1, outp2):
@@ -70,14 +70,18 @@ class Word2Vec_Model():
                 classes_text_embedding.append(self.model[class_label])
         return np.array(classes_text_embedding, dtype=np.float32)
     
-    def train_nearest_neighbor(self, samples, num_nearest_neighbor=1):
+    def train_nearest_neighbor(self, embeddings, num_nearest_neighbor=5):
         print("NearestNeighbors training start...")
-        embeddings = np.array(samples, dtype=np.float32) # Get embeddings from all_text_embedding dictionary
-        print('In train_nearest_neighbor: embeddings shape:', samples.shape)
+        samples = np.array(embeddings, dtype=np.float32) # Get embeddings from all_text_embedding dictionary
+        print('Train_nearest_neighbor: sample shape:', samples.shape)
         nbrs = NearestNeighbors(num_nearest_neighbor, algorithm='ball_tree').fit(samples)
         self.nearest_neighbor = nbrs
        
         return 'NearestNeighbors training finished!'
+
+    def get_nearest_neighbor_labels_from_definedset(self, X, top_num):
+        indices = nearest_neighbor.kneighbors(X, top_num, return_distance=False)
+        return (indices)
 
     def get_nearest_neighbor_labels(self, embeddings, top_num):
         nn_labels = []
